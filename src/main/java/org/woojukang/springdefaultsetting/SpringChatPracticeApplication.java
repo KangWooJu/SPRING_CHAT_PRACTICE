@@ -6,10 +6,10 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 @SpringBootApplication
 @EnableJpaAuditing
-public class SpringDefaultSettingApplication {
+public class SpringChatPracticeApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(SpringDefaultSettingApplication.class, args);
+        SpringApplication.run(SpringChatPracticeApplication.class, args);
     }
 
 }

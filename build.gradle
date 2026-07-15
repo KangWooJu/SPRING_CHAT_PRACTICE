@@ -6,7 +6,7 @@ plugins {
 
 group = 'org.woojukang'
 version = '0.0.1-SNAPSHOT'
-description = 'SpringDefaultSetting'
+description = 'Spring_Chat_Practice'
 
 java {
     toolchain {
