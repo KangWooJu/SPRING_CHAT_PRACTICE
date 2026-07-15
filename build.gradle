@@ -47,6 +47,9 @@ dependencies {
     implementation 'io.jsonwebtoken:jjwt-impl:0.12.3'
     implementation 'io.jsonwebtoken:jjwt-jackson:0.12.3'
 
+    /* WebSocket */
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+
     /* Spring Boot Dev */
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     compileOnly 'org.projectlombok:lombok'
