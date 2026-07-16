@@ -3,17 +3,25 @@ package org.woojukang.springChatPractice.domain.chat.facade;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.woojukang.springChatPractice.domain.chat.dto.MessageType;
 import org.woojukang.springChatPractice.domain.chat.dto.request.CreateChatRoomRequest;
 import org.woojukang.springChatPractice.domain.chat.dto.request.DeleteChatRoomRequest;
+import org.woojukang.springChatPractice.domain.chat.dto.request.SendChatMessageRequest;
 import org.woojukang.springChatPractice.domain.chat.dto.response.CreateChatRoomResponse;
 import org.woojukang.springChatPractice.domain.chat.dto.response.DeleteChatRoomResponse;
+import org.woojukang.springChatPractice.domain.chat.dto.response.SendChatMessageResponse;
+import org.woojukang.springChatPractice.domain.chat.entity.ChatMessage;
 import org.woojukang.springChatPractice.domain.chat.entity.ChatRoom;
 import org.woojukang.springChatPractice.domain.chat.service.ChatMessageService;
 import org.woojukang.springChatPractice.domain.chat.service.ChatRoomMemberService;
 import org.woojukang.springChatPractice.domain.chat.service.ChatRoomService;
+import org.woojukang.springChatPractice.domain.user.entity.User;
 import org.woojukang.springChatPractice.query.chat.service.ChatMessageQueryService;
 import org.woojukang.springChatPractice.query.chat.service.ChatRoomMemberQueryService;
 import org.woojukang.springChatPractice.query.chat.service.ChatRoomQueryService;
+import org.woojukang.springChatPractice.query.user.service.UserQueryService;
+
+import java.time.Instant;
 
 @Component
 @RequiredArgsConstructor
@@ -22,6 +30,8 @@ public class ChatFacade {
     private final ChatRoomQueryService chatRoomQueryService;
     private final ChatRoomMemberQueryService chatRoomMemberQueryService;
     private final ChatMessageQueryService chatMessageQueryService;
+
+    private final UserQueryService userQueryService;
 
     private final ChatRoomService chatRoomService;
     private final ChatRoomMemberService chatRoomMemberService;
@@ -72,7 +82,39 @@ public class ChatFacade {
 
     }
 
+    // 채팅방 메시지 전달하기
+    @Transactional
+    public void publishMessage(Long roomId,
+                               SendChatMessageRequest request,
+                               String username){
 
+        // ChatRoom 조회
+        ChatRoom chatRoom =
+                chatRoomQueryService.findChatRoomByRoomId(roomId);
 
+        // User 조회
+        User sender = userQueryService
+                .findByUsername(username);
 
+        // ChatMessage 객체 생성
+        ChatMessage chatMessage =
+                chatMessageService.createChatMessage(
+                        chatRoom,
+                        sender,
+                        request
+                                .message());
+
+        // chatMessage 객체 저장
+        chatMessageService.saveMessage(chatMessage);
+
+        // publish 메소드 호출
+        chatMessageService
+                .publishMessage(
+                        roomId,
+                        chatMessageService
+                                .makeChatResponse(
+                                        roomId,
+                                        sender,
+                                        chatMessage));
+    }
 }
