@@ -15,28 +15,30 @@ import com.querydsl.core.types.Path;
 @Generated("com.querydsl.codegen.DefaultEntitySerializer")
 public class QUser extends EntityPathBase<User> {
 
-    private static final long serialVersionUID = 1783752210L;
+    private static final long serialVersionUID = 583872246L;
 
     public static final QUser user = new QUser("user");
 
     public final org.woojukang.springChatPractice.global.jpa.QBaseEntity _super = new org.woojukang.springChatPractice.global.jpa.QBaseEntity(this);
 
     //inherited
-    public final DateTimePath<java.time.LocalDateTime> createdAt = _super.createdAt;
+    public final DateTimePath<java.time.Instant> createdAt = _super.createdAt;
 
     public final BooleanPath deleted = createBoolean("deleted");
 
     //inherited
-    public final DateTimePath<java.time.LocalDateTime> deletedAt = _super.deletedAt;
+    public final DateTimePath<java.time.Instant> deletedAt = _super.deletedAt;
 
     public final NumberPath<Long> id = createNumber("id", Long.class);
+
+    public final StringPath nickname = createString("nickname");
 
     public final StringPath password = createString("password");
 
     public final StringPath role = createString("role");
 
     //inherited
-    public final DateTimePath<java.time.LocalDateTime> updatedAt = _super.updatedAt;
+    public final DateTimePath<java.time.Instant> updatedAt = _super.updatedAt;
 
     public final StringPath username = createString("username");
 

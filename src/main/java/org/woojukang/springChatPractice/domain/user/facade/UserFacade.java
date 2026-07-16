@@ -12,6 +12,7 @@ import org.woojukang.springChatPractice.domain.user.service.UserService;
 import org.woojukang.springChatPractice.global.security.dto.UserAuthCache;
 import org.woojukang.springChatPractice.query.user.service.UserQueryService;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Component
@@ -32,8 +33,8 @@ public class UserFacade {
         userService.save(user);
 
         return new UserCreateResponse(user.getUsername(),
-                LocalDateTime.now(),
-                LocalDateTime.now());
+                Instant.now(),
+                Instant.now());
     }
 
 
