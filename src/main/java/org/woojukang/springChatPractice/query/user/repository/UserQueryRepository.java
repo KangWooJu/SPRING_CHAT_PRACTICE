@@ -28,4 +28,17 @@ public class UserQueryRepository {
 
     }
 
+
+    // nickname 중복 체크하기
+    public boolean existsByNickname(String nickname){
+
+        Integer result = jpaQueryFactory
+                .selectOne()
+                .from(user)
+                .where(user.nickname.eq(nickname))
+                .fetchFirst();
+
+        return result != null;
+    }
+
 }
