@@ -38,6 +38,3 @@ springdoc:
   packages-to-scan: org.woojukang.springdefaultsetting
   default-consumes-media-type: application/json
   default-produces-media-type: application/json
-
-google:
-  key: ${google_api_key} # Google API 키
