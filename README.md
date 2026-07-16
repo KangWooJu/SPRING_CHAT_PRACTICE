@@ -70,18 +70,18 @@ The project is based on my Spring Boot default template and is intended for stud
 
 ## 2. Progress / Changelog
 
-| Date | Description |
-|------|-------------|
-|2026-07-15|upload default package|
-|      |             |
-|      |             |
-|      |             |
-|      |             |
-|      |             |
-|      |             |
-|      |             |
-|      |             |
-|      |             |
+| Date       | Description         |
+|------------|---------------------|
+| 2026-07-15 | upload default package |
+| 2026-07-16 | Implement Chat domain (Entity, Repository, Service, Controller) |
+|            | Add STOMP/WebSocket configuration |
+|            | Implement QueryDSL repositories and generate Q classes |
+|            | Add request/response DTOs for chat APIs |
+|            | Introduce Facade layer for integration services |
+|            | Refactor `BaseEntity` timestamp type to `LocalDateTime` |
+|            | Add `WebSocketException` and exception handling |
+|            | Add nickname duplication check API |
+|            | Remove unused Google API configuration |
 
 ---
 
