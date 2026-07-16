@@ -1,0 +1,6 @@
+package org.woojukang.springChatPractice.domain.chat.dto.response;
+
+public record AddChatUserResponse(String username,
+                                  Long chatRoomId,
+                                  String message) {
+}
