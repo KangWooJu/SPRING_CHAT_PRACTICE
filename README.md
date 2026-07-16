@@ -82,6 +82,11 @@ The project is based on my Spring Boot default template and is intended for stud
 |            | Add `WebSocketException` and exception handling |
 |            | Add nickname duplication check API |
 |            | Remove unused Google API configuration |
+| 2026-07-17 | Add message publishing flow for STOMP chat |
+|            | Introduce `SendChatMessageRequest` DTO |
+|            | Refactor chat response DTO structure |
+|            | Integrate ChatFacade into message publishing flow |
+|            | Refactor STOMP controller method signature with `@Payload` and `Principal` |
 
 ---
 
