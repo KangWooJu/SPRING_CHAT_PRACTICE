@@ -5,6 +5,7 @@ import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Controller;
+import org.woojukang.springChatPractice.domain.chat.dto.MessageType;
 import org.woojukang.springChatPractice.domain.chat.dto.request.SendChatMessageRequest;
 import org.woojukang.springChatPractice.domain.chat.facade.ChatFacade;
 
@@ -32,12 +33,24 @@ public class ChatController {
     }
 
     @MessageMapping("/{roomId}/enter")
-    public void enter(){
+    public void enter(@DestinationVariable Long roomId,
+                      Principal principal){
 
+        chatFacade.publishSystemMessage(
+                roomId,
+                principal
+                        .getName(),
+                MessageType.ENTER);
     }
 
     @MessageMapping("/{roomId}/leave")
-    public void leave(){
+    public void leave(@DestinationVariable Long roomId,
+                      Principal principal){
 
+        chatFacade.publishSystemMessage(
+                roomId,
+                principal
+                        .getName(),
+                MessageType.LEAVE);
     }
 }
