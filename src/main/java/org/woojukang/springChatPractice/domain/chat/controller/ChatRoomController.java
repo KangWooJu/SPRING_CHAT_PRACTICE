@@ -5,9 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.woojukang.springChatPractice.domain.chat.dto.request.CreateChatRoomRequest;
 import org.woojukang.springChatPractice.domain.chat.dto.request.DeleteChatRoomRequest;
 import org.woojukang.springChatPractice.domain.chat.dto.response.CreateChatRoomResponse;
@@ -23,6 +21,7 @@ public class ChatRoomController {
     private final ChatFacade chatFacade;
 
     // 채팅방 생성하기
+    @PostMapping("/create")
     public ResponseEntity<ApiResult<CreateChatRoomResponse>> createChatRoom
     (@AuthenticationPrincipal UserDetails userDetails,
      @RequestBody CreateChatRoomRequest request){
@@ -38,6 +37,7 @@ public class ChatRoomController {
 
 
     // 채팅방 삭제하기
+    @DeleteMapping("/delete")
     public ResponseEntity<ApiResult<DeleteChatRoomResponse>> deleteChatRoom
     (@AuthenticationPrincipal UserDetails userDetails,
      @RequestBody DeleteChatRoomRequest request){
@@ -49,12 +49,6 @@ public class ChatRoomController {
                         .success(chatFacade
                                 .deleteChatRoom(request)));
     }
-
-
-
-
-
-
 
 
 }
