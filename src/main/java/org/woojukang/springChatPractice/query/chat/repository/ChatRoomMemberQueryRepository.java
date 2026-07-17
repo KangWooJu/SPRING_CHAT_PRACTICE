@@ -22,4 +22,18 @@ public class ChatRoomMemberQueryRepository {
                         .eq(roomId))
                 .fetchOne();
     }
+
+    public boolean checkSubscriberWithRoomId(Long roomId,Long userId){
+
+        Integer result = jpaQueryFactory
+                .selectOne()
+                .from(chatRoomMember)
+                .where(
+                        chatRoomMember.chatRoom.id.eq(roomId),
+                        chatRoomMember.user.id.eq(userId)
+                )
+                .fetchFirst();
+
+        return result != null;
+    }
 }
