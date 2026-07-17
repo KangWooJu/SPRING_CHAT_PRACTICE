@@ -19,7 +19,9 @@ public enum BaseExceptionEnum implements MessageCommInterface {
     REFRESH_TOKEN_NOT_FOUND("BASE.EXCEPTION.REFRESH_TOKEN_NOT_FOUND","refresh 토큰을 찾을 수 없습니다."),
     REFRESH_TOKEN_EXPIRED("BASE.EXCEPTION.REFRESH_TOKEN_EXPIRED","refresh 토큰이 파기되었습니다."),
     USER_ALREADY_LOGIN("BASE.EXCEPTION.USER_ALREADY_LOGIN","해당 유저는 이미 로그인 하였습니다."),
-    USER_NOT_FOUND("BASE.EXCEPTION.USER_NOT_FOUND","해당 유저를 찾을 수 없습니다.")
+    USER_NOT_FOUND("BASE.EXCEPTION.USER_NOT_FOUND","해당 유저를 찾을 수 없습니다."),
+    USER_UNAUTHORIZED("BASE.EXCEPTION.USER_UNAUTHORIZED","검증되지 않은 유저입니다."),
+    INVALID_TOKEN("BASE.EXCEPTION.INVALID_TOKEN","잘못된 형식의 토큰입니다."),
     ;
 
     private final String errorCode;
