@@ -64,6 +64,17 @@ public class ChatMessageService {
         chatMessageRepository.save(chatMessage);
     }
 
+    public String createSystemMessage(MessageType messageType,String userNickname){
+
+        return switch (messageType){
+            case ENTER -> userNickname + "님이 입장했습니다.";
+            case LEAVE -> userNickname + "님이 퇴장했습니다.";
+            default -> throw new IllegalArgumentException(
+                    "지원하지 않는 시스템 메시지 타입입니다."
+            );
+        };
+    }
+
 
 
 
