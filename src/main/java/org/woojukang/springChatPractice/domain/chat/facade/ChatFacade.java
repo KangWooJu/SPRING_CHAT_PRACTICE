@@ -117,4 +117,31 @@ public class ChatFacade {
                                         sender,
                                         chatMessage));
     }
+
+    public void publishSystemMessage(Long roomId,
+                                     String username,
+                                     MessageType messageType){
+
+
+        // 참여자 객체(user) 가져오기
+        User participant = userQueryService.findByUsername(username);
+
+        // messageType에 따른 시스템 메시지 생성
+        String systemMessage = chatMessageService
+                .createSystemMessage(messageType, participant.getNickname());
+
+        // response객체 생성
+        SendChatMessageResponse response = new SendChatMessageResponse(
+                messageType,
+                roomId,
+                participant.getId(),
+                participant.getNickname(),
+                systemMessage,
+                Instant.now()
+        );
+
+        // 해당 방에 메시지 전송
+        chatMessageService
+                .publishMessage(roomId,response);
+    }
 }
