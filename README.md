@@ -70,8 +70,8 @@ The project is based on my Spring Boot default template and is intended for stud
 
 ## 2. Progress / Changelog
 
-| Date       | Description         |
-|------------|---------------------|
+| Date       | Description |
+|------------|-------------|
 | 2026-07-15 | upload default package |
 | 2026-07-16 | Implement Chat domain (Entity, Repository, Service, Controller) |
 |            | Add STOMP/WebSocket configuration |
@@ -85,12 +85,17 @@ The project is based on my Spring Boot default template and is intended for stud
 | 2026-07-17 | Add message publishing flow for STOMP chat |
 |            | Introduce `SendChatMessageRequest` DTO |
 |            | Refactor chat response DTO structure |
-|            | Integrate ChatFacade into message publishing flow |
+|            | Integrate `ChatFacade` into message publishing flow |
 |            | Refactor STOMP controller method signature with `@Payload` and `Principal` |
+|            | Add JWT authentication provider for STOMP connection validation |
+|            | Introduce STOMP `ChannelInterceptor` for JWT and chat room membership validation |
+|            | Implement QueryDSL validation for chat room subscriber membership |
+|            | Add system message publishing API for room enter and leave events |
+|            | Implement STOMP message parsing by destination and message type |
 
 ---
 
-## 3. Getting Started
+## 3. Getting Started 
 
 1. Clone the project:
 
