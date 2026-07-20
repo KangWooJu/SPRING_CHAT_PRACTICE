@@ -10,6 +10,7 @@ import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactor
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
 import org.springframework.data.redis.serializer.GenericJacksonJsonRedisSerializer;
+import org.springframework.data.redis.serializer.JacksonJsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.woojukang.springChatPractice.global.security.dto.UserAuthCache;
 
@@ -66,8 +67,8 @@ public class RedisConfig {
         StringRedisSerializer stringSerializer =
                 new StringRedisSerializer();
 
-        GenericJacksonJsonRedisSerializer jsonSerializer =
-                GenericJacksonJsonRedisSerializer.builder().build();
+        JacksonJsonRedisSerializer<UserAuthCache> jsonSerializer =
+                new JacksonJsonRedisSerializer<>(UserAuthCache.class);
 
         redisTemplate.setKeySerializer(stringSerializer);
         redisTemplate.setValueSerializer(jsonSerializer);
