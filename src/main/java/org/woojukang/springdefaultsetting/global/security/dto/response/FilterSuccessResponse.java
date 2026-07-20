@@ -1,7 +1,0 @@
-package org.woojukang.springdefaultsetting.global.security.dto.response;
-
-public record FilterSuccessResponse(boolean success,
-                                   String method,
-                                   String message,
-                                   String time) {
-}
