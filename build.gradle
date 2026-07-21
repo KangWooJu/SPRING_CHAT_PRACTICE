@@ -56,8 +56,10 @@ dependencies {
 
     /* JSON */
 
+    /*
     implementation 'com.fasterxml.jackson.module:jackson-module-jsonSchema:2.14.2'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+     */
 
     /* RDBMS */
     runtimeOnly 'com.mysql:mysql-connector-j'
@@ -89,6 +91,7 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-security-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
     testImplementation "org.springframework.boot:spring-boot-testcontainers"
+    testImplementation "org.testcontainers:testcontainers:1.21.3"
     testImplementation "org.testcontainers:junit-jupiter:1.21.3"
     testImplementation "org.testcontainers:testcontainers:1.21.3"
     runtimeOnly 'com.h2database:h2'
