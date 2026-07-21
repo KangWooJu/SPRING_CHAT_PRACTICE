@@ -17,7 +17,7 @@ import org.woojukang.springChatPractice.global.security.dto.UserAuthCache;
 
 @Tag(name = "user",description = "유저 API")
 @RestController
-@RequestMapping("/api/v1/users")
+@RequestMapping("/api/v1/user")
 @RequiredArgsConstructor
 public class UserController {
 
