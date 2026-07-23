@@ -38,7 +38,7 @@ public class RedisConfig {
 
     // RefreshToken 같은 문자열 저장용
     @Bean
-    public RedisTemplate<String, String> stringRedisTemplate() {
+    public RedisTemplate<String, String> refreshTokenRedisTemplate() {
 
         RedisTemplate<String, String> redisTemplate = new RedisTemplate<>();
 
