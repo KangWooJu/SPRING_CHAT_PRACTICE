@@ -61,13 +61,13 @@ class UserTokenCacheRepositoryTest {
     private UserTokenCacheRepository userTokenCacheRepository;
 
     @Autowired
-    private RedisTemplate<String, String> stringRedisTemplate;
+    private RedisTemplate<String, String> refreshTokenRedisTemplate;
 
     // 테스트 후 플러싱
     @AfterEach
     void tearDown() {
         Objects.requireNonNull(
-                stringRedisTemplate.getConnectionFactory()
+                        refreshTokenRedisTemplate.getConnectionFactory()
         ).getConnection()
                 .serverCommands()
                 .flushAll();
@@ -155,7 +155,7 @@ class UserTokenCacheRepositoryTest {
                         expiredMs
         );
 
-        Long ttl = stringRedisTemplate
+        Long ttl = refreshTokenRedisTemplate
                 .getExpire(
                         key,
                         TimeUnit.MILLISECONDS

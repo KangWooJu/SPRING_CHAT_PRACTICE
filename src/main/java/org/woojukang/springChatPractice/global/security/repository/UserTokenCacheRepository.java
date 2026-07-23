@@ -12,14 +12,14 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 public class UserTokenCacheRepository {
 
-    private final RedisTemplate<String,String> StringRedisTemplate;
+    private final RedisTemplate<String,String> refreshTokenRedisTemplate;
 
     // 저장
     public void save(String key,
                      String value,
                      Long expiredMs){
 
-        StringRedisTemplate
+        refreshTokenRedisTemplate
                 .opsForValue()
                 .set(key,
                         value,
@@ -30,7 +30,7 @@ public class UserTokenCacheRepository {
 
     public Object findByKey(String key){
 
-        Object value = StringRedisTemplate.opsForValue().get(key);
+        Object value = refreshTokenRedisTemplate.opsForValue().get(key);
 
         if(value == null){
             throw new BaseException(BaseExceptionEnum.REFRESH_TOKEN_NOT_FOUND);
@@ -40,11 +40,11 @@ public class UserTokenCacheRepository {
     }
 
     public void delete(String key){
-        StringRedisTemplate.delete(key);
+        refreshTokenRedisTemplate.delete(key);
     }
 
     public boolean exists(String key){
-        return StringRedisTemplate
+        return refreshTokenRedisTemplate
                 .hasKey(key);
     }
 
