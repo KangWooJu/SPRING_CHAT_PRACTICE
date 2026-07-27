@@ -25,11 +25,15 @@ public class UserDetailsImpl implements UserDetails {
 
     @Override
     public @Nullable String getPassword() {
-        return "password is Encoded";
+        return user.getPassword();
     }
 
     @Override
     public String getUsername() {
         return user.getUsername();
+    }
+
+    public Long getUserId(){
+        return user.getId();
     }
 }

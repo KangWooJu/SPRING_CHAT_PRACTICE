@@ -92,6 +92,18 @@ The project is based on my Spring Boot default template and is intended for stud
 |            | Implement QueryDSL validation for chat room subscriber membership |
 |            | Add system message publishing API for room enter and leave events |
 |            | Implement STOMP message parsing by destination and message type |
+| 2026-07-23 | Introduce Testcontainers-based integration test environment (MySQL, Redis) |
+|            | Add reusable `IntegrationTest` base class |
+|            | Implement `UserAuthCache` and Redis-based authentication cache |
+|            | Introduce `UserAuthCacheService` for authentication data management |
+|            | Cache authenticated user information during JWT login |
+|            | Configure `DaoAuthenticationProvider` for custom `UserDetailsService` |
+|            | Add `AuthPrincipal`-based authentication support |
+|            | Add integration and unit tests for User and Security components |
+|            | Add `UserAuthCacheRepository` and Redis repository tests |
+|            | Refactor user DTOs and entity to support `nickname` |
+|            | Upgrade SpringDoc OpenAPI to v3 |
+|            | Configure JWT secret through environment variables |
 
 ---
 

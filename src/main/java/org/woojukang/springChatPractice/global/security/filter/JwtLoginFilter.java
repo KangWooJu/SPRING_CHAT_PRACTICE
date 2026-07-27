@@ -15,9 +15,12 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.woojukang.springChatPractice.global.config.exception.dto.ApiResult;
+import org.woojukang.springChatPractice.global.security.auth.UserDetailsImpl;
+import org.woojukang.springChatPractice.global.security.dto.UserAuthCache;
 import org.woojukang.springChatPractice.global.security.dto.request.LoginRequest;
 import org.woojukang.springChatPractice.global.security.dto.response.LoginResponse;
 import org.woojukang.springChatPractice.global.security.service.RefreshService;
+import org.woojukang.springChatPractice.global.security.service.UserAuthCacheService;
 import org.woojukang.springChatPractice.global.security.util.JwtUtil;
 import org.woojukang.springChatPractice.global.utils.app.JsonResponseUtils;
 import org.woojukang.springChatPractice.global.utils.web.CookieUtil;
@@ -34,12 +37,14 @@ public class JwtLoginFilter extends UsernamePasswordAuthenticationFilter {
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
     private final RefreshService refreshService;
+    private final UserAuthCacheService userAuthCacheService;
     private final CookieUtil cookieUtil;
 
     public JwtLoginFilter(ObjectMapper objectMapper,
                           AuthenticationManager authenticationManager,
                           JwtUtil jwtUtil,
                           RefreshService refreshService,
+                          UserAuthCacheService userAuthCacheService,
                           CookieUtil cookieUtil){
 
         this.objectMapper = objectMapper;
@@ -47,6 +52,7 @@ public class JwtLoginFilter extends UsernamePasswordAuthenticationFilter {
         this.jwtUtil = jwtUtil;
         this.refreshService = refreshService;
         this.cookieUtil = cookieUtil;
+        this.userAuthCacheService = userAuthCacheService;
         setAuthenticationManager(authenticationManager);
     }
 
@@ -87,19 +93,32 @@ public class JwtLoginFilter extends UsernamePasswordAuthenticationFilter {
              Authentication authResult)
             throws IOException, ServletException {
 
-        String username = authResult.getName();
-
         String role = authResult.getAuthorities()
                 .stream()
                 .findFirst()
                 .map(GrantedAuthority::getAuthority)
                 .orElseThrow();
 
+
+
+        UserDetailsImpl userDetails = (UserDetailsImpl) authResult.getPrincipal();
+
+        Long userId = userDetails.getUserId();
+        String username = userDetails.getUsername();
+
         // access 토큰 생성
         String access = jwtUtil.createJwt("access",username,role,600000*6*24L);
 
         // refresh 토큰 생성
         String refresh = jwtUtil.createJwt("refresh",username,role,7*600000*6*24L);
+
+        UserAuthCache userAuthCache = new UserAuthCache(
+                userId,
+                username,
+                role);
+
+        // User의 간단한 정보를 담은 DTO를 Redis에 저장
+        userAuthCacheService.saveUserAuthCache(userAuthCache);
 
         // cache에 refresh 토큰 추가
         refreshService.addRefresh(username,refresh);

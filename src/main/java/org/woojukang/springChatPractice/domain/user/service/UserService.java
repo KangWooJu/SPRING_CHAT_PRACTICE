@@ -23,6 +23,7 @@ public class UserService {
                 .password(bCryptPasswordEncoder
                         .encode(userCreateRequest
                                 .password()))
+                .nickname(userCreateRequest.nickname())
                 .role("USER")
                 .deleted(false)
                 .build();
