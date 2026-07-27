@@ -1,10 +1,7 @@
 package org.woojukang.springChatPractice.domain.chat.entity;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.woojukang.springChatPractice.domain.user.entity.User;
 
 @Table(
@@ -19,6 +16,7 @@ import org.woojukang.springChatPractice.domain.user.entity.User;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
+@Getter
 public class ChatRoomMember {
 
     @Id
