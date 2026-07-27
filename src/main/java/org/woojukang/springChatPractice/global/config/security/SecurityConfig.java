@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -16,11 +17,13 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
+import org.woojukang.springChatPractice.global.security.auth.UserDetailsServiceImpl;
 import org.woojukang.springChatPractice.global.security.filter.JwtFilter;
 import org.woojukang.springChatPractice.global.security.filter.JwtLoginFilter;
 import org.woojukang.springChatPractice.global.security.filter.JwtLogoutFilter;
 import org.woojukang.springChatPractice.global.security.repository.UserAuthCacheRepository;
 import org.woojukang.springChatPractice.global.security.service.RefreshService;
+import org.woojukang.springChatPractice.global.security.service.UserAuthCacheService;
 import org.woojukang.springChatPractice.global.security.util.JwtUtil;
 import org.woojukang.springChatPractice.global.security.validator.RefreshTokenValidator;
 import org.woojukang.springChatPractice.global.utils.web.CookieUtil;
@@ -32,10 +35,12 @@ public class SecurityConfig {
 
     private final JwtUtil jwtUtil;
     private final RefreshService refreshService;
+    private final UserAuthCacheService userAuthCacheService;
     private final CookieUtil cookieUtil;
     private final RefreshTokenValidator refreshTokenValidator;
     private final ObjectMapper objectMapper;
     private final UserAuthCacheRepository userAuthCacheRepository;
+
 
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder(){
@@ -48,6 +53,19 @@ public class SecurityConfig {
             throws Exception {
 
         return authenticationConfiguration.getAuthenticationManager();
+    }
+
+    @Bean
+    public DaoAuthenticationProvider daoAuthenticationProvider(
+            UserDetailsServiceImpl userDetailsService,
+            BCryptPasswordEncoder passwordEncoder
+    ) {
+        DaoAuthenticationProvider provider =
+                new DaoAuthenticationProvider(userDetailsService);
+
+        provider.setPasswordEncoder(passwordEncoder);
+
+        return provider;
     }
 
     @Bean
@@ -64,6 +82,7 @@ public class SecurityConfig {
                 authenticationManager,
                 jwtUtil,
                 refreshService,
+                userAuthCacheService,
                 cookieUtil);
     }
 
