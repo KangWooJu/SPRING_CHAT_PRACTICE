@@ -6,13 +6,20 @@ import org.springframework.transaction.annotation.Transactional;
 import org.woojukang.springChatPractice.domain.chat.entity.ChatRoomMember;
 import org.woojukang.springChatPractice.query.chat.repository.ChatRoomMemberQueryRepository;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class ChatRoomMemberQueryService {
 
     private final ChatRoomMemberQueryRepository chatRoomMemberQueryRepository;
 
-    public ChatRoomMember findByRoomId(Long roomId){
+    public void deleteAllChatRoomMemberByRoomId(Long roomId){
+
+        chatRoomMemberQueryRepository.deleteAllChatMemberByRoomId(roomId);
+    }
+
+    public List<ChatRoomMember> findByRoomId(Long roomId){
 
         return chatRoomMemberQueryRepository.findByRoomId(roomId);
     }

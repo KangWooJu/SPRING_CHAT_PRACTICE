@@ -11,7 +11,5 @@ public class ChatRoomMemberService {
 
     private final ChatRoomMemberRepository chatRoomMemberRepository;
 
-    public void deleteChatRoomMember(ChatRoomMember chatRoomMember){
-        chatRoomMemberRepository.delete(chatRoomMember);
-    }
+
 }
