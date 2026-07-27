@@ -19,9 +19,13 @@ public class ChatRoomQueryRepository {
 
         return Optional.ofNullable(jpaQueryFactory
                 .selectFrom(chatRoom)
-                .where(chatRoom
-                        .id
-                        .eq(roomId))
+                .where(
+                        chatRoom
+                                .id
+                                .eq(roomId),
+                        chatRoom
+                                .deleted
+                                .isFalse())
                 .fetchOne());
     }
 
