@@ -19,14 +19,18 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.woojukang.springChatPractice.global.security.auth.AuthPrincipal;
+import org.woojukang.springChatPractice.global.security.dto.UserAuthCache;
 import org.woojukang.springChatPractice.global.security.dto.request.LoginRequest;
 import org.woojukang.springChatPractice.global.security.filter.JwtLoginFilter;
 import org.woojukang.springChatPractice.global.security.service.RefreshService;
+import org.woojukang.springChatPractice.global.security.service.UserAuthCacheService;
 import org.woojukang.springChatPractice.global.security.util.JwtUtil;
 import org.woojukang.springChatPractice.global.utils.web.CookieUtil;
 
 
 import java.nio.charset.StandardCharsets;
+import java.util.Collection;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
@@ -42,6 +46,9 @@ class JwtLoginFilterTest {
 
     @Mock
     private AuthenticationManager authenticationManager;
+
+    @Mock
+    private UserAuthCacheService userAuthCacheService;
 
     @Mock
     private JwtUtil jwtUtil;
@@ -123,11 +130,12 @@ class JwtLoginFilterTest {
     }
 
     @Test
-    @DisplayName("로그인 성공 시 , access 토큰의 헤더와 refresh 토큰 쿠키를 추가")
+    @DisplayName("로그인 성공 시 인증 Principal로 UserAuthCache를 저장하고 토큰을 응답한다")
     void successfulAuthentication_success()
             throws Exception{
 
         // given
+        Long userId = 1L;
         String username = "testUser";
         String role = "ROLE_USER";
 
@@ -140,16 +148,24 @@ class JwtLoginFilterTest {
         Authentication authentication =
                 mock(Authentication.class);
 
-        List<GrantedAuthority> authorities =
+        AuthPrincipal authPrincipal =
+                mock(AuthPrincipal.class);
+
+        Collection<GrantedAuthority> authorities =
                 List.of(new SimpleGrantedAuthority(role));
+
+        when(authentication.getPrincipal())
+                .thenReturn(authPrincipal);
 
         doReturn(authorities)
                 .when(authentication)
                 .getAuthorities();
 
-        when(authentication
-                .getName())
+        when(authPrincipal.getUsername())
                 .thenReturn(username);
+
+        when(authPrincipal.getUserId())
+                .thenReturn(userId);
 
         when(jwtUtil
                 .createJwt(
@@ -207,6 +223,25 @@ class JwtLoginFilterTest {
         assertThat(response.getContentAsString())
                 .contains("로그인에 성공하였습니다.");
 
+        // UserAuthCache 저장 검증
+        ArgumentCaptor<UserAuthCache> captor =
+                ArgumentCaptor.forClass(UserAuthCache.class);
+
+        verify(userAuthCacheService, times(1))
+                .saveUserAuthCache(captor.capture());
+
+        UserAuthCache savedCache =
+                captor.getValue();
+
+        assertThat(savedCache.userId())
+                .isEqualTo(userId);
+
+        assertThat(savedCache.username())
+                .isEqualTo(username);
+
+        assertThat(savedCache.role())
+                .isEqualTo(role);
+
         verify(refreshService,times(1))
                 .addRefresh(username, "refreshToken");
 
@@ -224,6 +259,12 @@ class JwtLoginFilterTest {
                         eq(username),
                         eq(role),
                         any(Long.class)
+                );
+
+        verify(cookieUtil, times(1))
+                .createCookie(
+                        "refreshToken",
+                        "refreshToken"
                 );
 
     }
@@ -269,12 +310,14 @@ class JwtLoginFilterTest {
                  AuthenticationManager authenticationManager,
                  JwtUtil jwtUtil,
                  RefreshService refreshService,
+                 UserAuthCacheService userAuthCacheService,
                  CookieUtil cookieUtil) {
 
             super(objectMapper,
                     authenticationManager,
                     jwtUtil,
                     refreshService,
+                    userAuthCacheService,
                     cookieUtil);
         }
 
