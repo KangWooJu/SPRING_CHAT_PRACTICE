@@ -61,10 +61,9 @@ public class ChatFacade {
                         .roomId());
 
         // chatRoomMember 관계 삭제(hard)
-        chatRoomMemberService
-                .deleteChatRoomMember(chatRoomMemberQueryService
-                        .findByRoomId(request
-                                .roomId()));
+        chatRoomMemberQueryService
+                .deleteAllChatRoomMemberByRoomId(chatRoom
+                        .getId());
 
         // 채팅방 삭제(soft)
         chatRoomService.deleteChatRoom(chatRoom);
