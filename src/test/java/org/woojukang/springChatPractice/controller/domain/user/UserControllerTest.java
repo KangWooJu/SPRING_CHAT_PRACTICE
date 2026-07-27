@@ -55,6 +55,7 @@ class UserControllerTest {
 
                 new UserCreateRequest(
                         "testUser",
+                        "testNickname",
                         "1234"
                 );
 
