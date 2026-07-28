@@ -2,15 +2,9 @@ package org.woojukang.springChatPractice.domain.chat.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.woojukang.springChatPractice.domain.chat.dto.request.AddChatUserRequest;
 import org.woojukang.springChatPractice.domain.chat.dto.request.CreateChatRoomRequest;
-import org.woojukang.springChatPractice.domain.chat.dto.request.DeleteChatUserRequest;
-import org.woojukang.springChatPractice.domain.chat.dto.response.AddChatUserResponse;
 import org.woojukang.springChatPractice.domain.chat.dto.response.CreateChatRoomResponse;
-import org.woojukang.springChatPractice.domain.chat.dto.response.DeleteChatUserResponse;
 import org.woojukang.springChatPractice.domain.chat.entity.ChatRoom;
-import org.woojukang.springChatPractice.domain.chat.entity.ChatRoomMember;
-import org.woojukang.springChatPractice.domain.chat.repository.ChatRoomMemberRepository;
 import org.woojukang.springChatPractice.domain.chat.repository.ChatRoomRepository;
 
 @Service
@@ -18,7 +12,6 @@ import org.woojukang.springChatPractice.domain.chat.repository.ChatRoomRepositor
 public class ChatRoomService {
 
     private final ChatRoomRepository chatRoomRepository;
-    private final ChatRoomMemberRepository chatRoomMemberRepository;
 
     // Chat Room 삭제하기 (soft)
     public void deleteChatRoom(ChatRoom chatRoom){
