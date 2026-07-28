@@ -11,14 +11,21 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import org.woojukang.springChatPractice.domain.chat.dto.MessageType;
+import org.woojukang.springChatPractice.domain.chat.dto.request.AddChatRoomMemberRequest;
+import org.woojukang.springChatPractice.domain.chat.dto.request.AddChatUserRequest;
 import org.woojukang.springChatPractice.domain.chat.dto.request.CreateChatRoomRequest;
+import org.woojukang.springChatPractice.domain.chat.dto.request.DeleteChatRoomMemberRequest;
 import org.woojukang.springChatPractice.domain.chat.dto.request.DeleteChatRoomRequest;
+import org.woojukang.springChatPractice.domain.chat.dto.request.DeleteChatUserRequest;
 import org.woojukang.springChatPractice.domain.chat.dto.request.SendChatMessageRequest;
+import org.woojukang.springChatPractice.domain.chat.dto.response.AddChatUserResponse;
 import org.woojukang.springChatPractice.domain.chat.dto.response.CreateChatRoomResponse;
 import org.woojukang.springChatPractice.domain.chat.dto.response.DeleteChatRoomResponse;
+import org.woojukang.springChatPractice.domain.chat.dto.response.DeleteChatUserResponse;
 import org.woojukang.springChatPractice.domain.chat.dto.response.SendChatMessageResponse;
 import org.woojukang.springChatPractice.domain.chat.entity.ChatMessage;
 import org.woojukang.springChatPractice.domain.chat.entity.ChatRoom;
+import org.woojukang.springChatPractice.domain.chat.entity.ChatRoomMember;
 import org.woojukang.springChatPractice.domain.chat.facade.ChatFacade;
 import org.woojukang.springChatPractice.domain.chat.service.ChatMessageService;
 import org.woojukang.springChatPractice.domain.chat.service.ChatRoomMemberService;
@@ -87,7 +94,8 @@ class ChatFacadeTest {
                 chatFacade.createChatRoom(request);
 
         // then
-        assertThat(result).isSameAs(expectedResponse);
+        assertThat(result)
+                .isSameAs(expectedResponse);
 
         verify(chatRoomService)
                 .createChatRoom(request);
@@ -98,6 +106,192 @@ class ChatFacadeTest {
                 chatMessageQueryService,
                 userQueryService,
                 chatRoomMemberService,
+                chatMessageService
+        );
+    }
+
+    @Test
+    @DisplayName("사용자와 채팅방을 조회한 후, 채팅방에 사용자를 추가")
+    void addChatUserSuccess() {
+
+        // given
+        Long userId = 10L;
+
+        Long roomId = 1L;
+
+        AddChatRoomMemberRequest request =
+                mock(AddChatRoomMemberRequest.class);
+
+        User user =
+                mock(User.class);
+
+        ChatRoom chatRoom =
+                mock(ChatRoom.class);
+
+        AddChatUserResponse expectedResponse =
+                mock(AddChatUserResponse.class);
+
+        when(request
+                .userId())
+                .thenReturn(userId);
+
+        when(request
+                .roomId())
+                .thenReturn(roomId);
+
+        when(userQueryService
+                .findById(userId))
+                .thenReturn(user);
+
+        when(chatRoomQueryService
+                .findChatRoomByRoomId(roomId))
+                .thenReturn(chatRoom);
+
+        when(chatRoomMemberService
+                .addChatUser(any(AddChatUserRequest.class)))
+                .thenReturn(expectedResponse);
+
+        ArgumentCaptor<AddChatUserRequest> requestCaptor =
+                ArgumentCaptor.forClass(
+                        AddChatUserRequest.class
+                );
+
+        // when
+        AddChatUserResponse result = chatFacade.addChatUser(request);
+
+        // then
+        assertThat(result).isSameAs(expectedResponse);
+
+        InOrder inOrder = inOrder(
+                userQueryService,
+                chatRoomQueryService,
+                chatRoomMemberService
+        );
+
+        inOrder.verify(userQueryService)
+                .findById(userId);
+
+        inOrder.verify(chatRoomQueryService)
+                .findChatRoomByRoomId(roomId);
+
+        inOrder.verify(chatRoomMemberService)
+                .addChatUser(requestCaptor
+                        .capture());
+
+        AddChatUserRequest capturedRequest = requestCaptor.getValue();
+
+        assertThat(capturedRequest
+                .user())
+                .isSameAs(user);
+
+        assertThat(capturedRequest
+                .chatRoom())
+                .isSameAs(chatRoom);
+
+        verifyNoInteractions(
+                chatRoomMemberQueryService,
+                chatMessageQueryService,
+                chatRoomService,
+                chatMessageService
+        );
+    }
+
+    @Test
+    @DisplayName("채팅방 멤버와 채팅방을 조회한 후, 채팅방에서 멤버를 삭제")
+    void deleteChatUserSuccess() {
+
+        // given
+        Long userId = 10L;
+        Long roomId = 1L;
+
+        DeleteChatRoomMemberRequest request =
+                mock(DeleteChatRoomMemberRequest.class);
+
+        ChatRoomMember chatRoomMember =
+                mock(ChatRoomMember.class);
+
+        User user =
+                mock(User.class);
+
+        ChatRoom chatRoom =
+                mock(ChatRoom.class);
+
+        DeleteChatUserResponse expectedResponse =
+                mock(DeleteChatUserResponse.class);
+
+        when(request
+                .userId())
+                .thenReturn(userId);
+
+        when(request
+                .roomId())
+                .thenReturn(roomId);
+
+        when(chatRoomMemberQueryService
+                .findByMemberId(userId))
+                .thenReturn(chatRoomMember);
+
+        when(userQueryService
+                .findById(userId))
+                .thenReturn(user);
+
+        when(chatRoomQueryService
+                .findChatRoomByRoomId(roomId))
+                .thenReturn(chatRoom);
+
+        when(chatRoomMemberService
+                .deleteChatUser(any(DeleteChatUserRequest.class)))
+                .thenReturn(expectedResponse);
+
+        ArgumentCaptor<DeleteChatUserRequest> requestCaptor =
+                ArgumentCaptor.forClass(
+                        DeleteChatUserRequest.class
+                );
+
+        // when
+        DeleteChatUserResponse result =
+                chatFacade.deleteChatUser(request);
+
+        // then
+        assertThat(result)
+                .isSameAs(expectedResponse);
+
+        InOrder inOrder = inOrder(
+                chatRoomMemberQueryService,
+                userQueryService,
+                chatRoomQueryService,
+                chatRoomMemberService
+        );
+
+        inOrder.verify(chatRoomMemberQueryService)
+                .findByMemberId(userId);
+
+        inOrder.verify(userQueryService)
+                .findById(userId);
+
+        inOrder.verify(chatRoomQueryService)
+                .findChatRoomByRoomId(roomId);
+
+        inOrder.verify(chatRoomMemberService)
+                .deleteChatUser(requestCaptor.capture());
+
+        DeleteChatUserRequest capturedRequest = requestCaptor.getValue();
+
+        assertThat(capturedRequest
+                .chatRoomMember())
+                .isSameAs(chatRoomMember);
+
+        assertThat(capturedRequest
+                .user())
+                .isSameAs(user);
+
+        assertThat(capturedRequest
+                .chatRoom())
+                .isSameAs(chatRoom);
+
+        verifyNoInteractions(
+                chatMessageQueryService,
+                chatRoomService,
                 chatMessageService
         );
     }
@@ -140,10 +334,12 @@ class ChatFacadeTest {
                 .thenReturn(deletedMessageCount);
 
         // when
-        DeleteChatRoomResponse result = chatFacade.deleteChatRoom(request);
+        DeleteChatRoomResponse result =
+                chatFacade.deleteChatRoom(request);
 
         // then
-        assertThat(result).isNotNull();
+        assertThat(result)
+                .isNotNull();
 
         InOrder inOrder = inOrder(
                 chatRoomQueryService,
@@ -172,14 +368,12 @@ class ChatFacadeTest {
     }
 
     @Test
-    @DisplayName("일반 채팅 메시지를 생성 , 저장 후, 채팅방에 발행")
+    @DisplayName("일반 채팅 메시지를 생성 & 저장 후, 채팅방에 발행")
     void publishMessageSuccess() {
 
         // given
         Long roomId = 1L;
-
         String username = "testUser";
-
         String messageContent = "안녕하세요";
 
         SendChatMessageRequest request =
@@ -209,17 +403,21 @@ class ChatFacadeTest {
                 .findByUsername(username))
                 .thenReturn(sender);
 
-        when(chatMessageService.createChatMessage(
-                chatRoom,
-                sender,
-                messageContent
-        )).thenReturn(chatMessage);
+        when(chatMessageService
+                .createChatMessage(
+                        chatRoom,
+                        sender,
+                        messageContent
+                ))
+                .thenReturn(chatMessage);
 
-        when(chatMessageService.makeChatResponse(
-                roomId,
-                sender,
-                chatMessage
-        )).thenReturn(response);
+        when(chatMessageService
+                .makeChatResponse(
+                        roomId,
+                        sender,
+                        chatMessage
+                ))
+                .thenReturn(response);
 
         // when
         chatFacade.publishMessage(
@@ -304,10 +502,12 @@ class ChatFacadeTest {
                 .getNickname())
                 .thenReturn(nickname);
 
-        when(chatMessageService.createSystemMessage(
-                messageType,
-                nickname
-        )).thenReturn(systemMessage);
+        when(chatMessageService
+                .createSystemMessage(
+                        messageType,
+                        nickname
+                ))
+                .thenReturn(systemMessage);
 
         ArgumentCaptor<SendChatMessageResponse> responseCaptor =
                 ArgumentCaptor.forClass(
@@ -337,9 +537,11 @@ class ChatFacadeTest {
                         responseCaptor.capture()
                 );
 
-        SendChatMessageResponse response = responseCaptor.getValue();
+        SendChatMessageResponse response =
+                responseCaptor.getValue();
 
-        assertThat(response).isNotNull();
+        assertThat(response)
+                .isNotNull();
 
         verifyNoInteractions(
                 chatRoomQueryService,
@@ -351,7 +553,7 @@ class ChatFacadeTest {
     }
 
     @Test
-    @DisplayName("퇴장 시스템 메시지를 생성 후, 채팅방에 발행")
+    @DisplayName("퇴장 시스템 메시지를 생성한 뒤 채팅방에 발행")
     void publishLeaveSystemMessageSuccess() {
 
         // given
@@ -382,10 +584,12 @@ class ChatFacadeTest {
                 .getNickname())
                 .thenReturn(nickname);
 
-        when(chatMessageService.createSystemMessage(
-                messageType,
-                nickname
-        )).thenReturn(systemMessage);
+        when(chatMessageService
+                .createSystemMessage(
+                        messageType,
+                        nickname
+                ))
+                .thenReturn(systemMessage);
 
         ArgumentCaptor<SendChatMessageResponse> responseCaptor =
                 ArgumentCaptor.forClass(
@@ -454,10 +658,12 @@ class ChatFacadeTest {
                 .getNickname())
                 .thenReturn(nickname);
 
-        when(chatMessageService.createSystemMessage(
-                MessageType.ENTER,
-                nickname
-        )).thenReturn("테스트유저님이 입장했습니다.");
+        when(chatMessageService
+                .createSystemMessage(
+                        MessageType.ENTER,
+                        nickname
+                ))
+                .thenReturn("테스트유저님이 입장했습니다.");
 
         // when
         chatFacade.publishSystemMessage(
@@ -473,6 +679,7 @@ class ChatFacadeTest {
         verify(chatMessageService)
                 .publishMessage(
                         eq(roomId),
-                        any(SendChatMessageResponse.class));
+                        any(SendChatMessageResponse.class)
+                );
     }
 }
