@@ -45,40 +45,5 @@ public class ChatRoomService {
                         .getCreatedAt(),
                 "채팅방이 생성되었습니다.");
     }
-
-    // 채팅방 인원 추가
-    public AddChatUserResponse addChatUser
-    (AddChatUserRequest request){
-
-        ChatRoomMember chatRoomMember = ChatRoomMember
-                .builder()
-                .chatRoom(request.chatRoom())
-                .user(request.user())
-                .build();
-
-        String username = request.user().getUsername();
-
-        return new AddChatUserResponse(
-                username,
-                request
-                        .chatRoom()
-                        .getId(),
-                username+"님이 채팅방에 입장하셨습니다.");
-
-    }
-
-    // 채팅방 인원 삭제
-    public DeleteChatUserResponse deleteChatUser
-    (DeleteChatUserRequest request){
-
-        chatRoomMemberRepository
-                .delete(request.chatRoomMember());
-
-        return new DeleteChatUserResponse(request.chatRoom().getId(),
-                request.user().getUsername(),
-                request.user().getUsername() + "님이 퇴장하셨습니다.");
-    }
-
     // 채팅방 유저 이름 중복 확인 ( QueryDSL )
-
 }
