@@ -58,7 +58,7 @@ public class ChatSubscriptionRegistry {
         Map<String,ChatSubscriptionInfo> removed =
                 subscriptionsBySession.remove(sessionId);
 
-        if (removed != null){
+        if (removed == null){
             return List.of();
         }
 
