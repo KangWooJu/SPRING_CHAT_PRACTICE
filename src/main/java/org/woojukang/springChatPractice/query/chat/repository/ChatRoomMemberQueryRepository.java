@@ -7,6 +7,7 @@ import org.woojukang.springChatPractice.domain.chat.entity.ChatRoomMember;
 import org.woojukang.springChatPractice.domain.chat.entity.QChatRoomMember;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
@@ -35,6 +36,19 @@ public class ChatRoomMemberQueryRepository {
                         .id
                         .eq(roomId))
                 .fetch();
+    }
+
+    public Optional<ChatRoomMember> findByMemberId(Long memberId){
+
+        return Optional.ofNullable(
+                jpaQueryFactory
+                        .selectFrom(chatRoomMember)
+                        .where(chatRoomMember
+                                .user
+                                .id
+                                .eq(memberId))
+                        .fetchOne()
+        );
     }
 
     public boolean checkSubscriberWithRoomId(Long roomId,Long userId){

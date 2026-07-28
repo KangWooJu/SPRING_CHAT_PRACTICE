@@ -26,6 +26,14 @@ public class UserQueryService {
 
     }
 
+    public User findById(Long id){
+
+        return userQueryRepository
+                .findById(id)
+                .orElseThrow(()-> new BaseException(BaseExceptionEnum
+                        .USER_NOT_FOUND));
+    }
+
     // Redis에서 조회
     public UserAuthCache findByUsernameInCache(String username){
 
