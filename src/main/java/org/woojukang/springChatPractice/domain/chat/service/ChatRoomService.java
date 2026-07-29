@@ -33,6 +33,8 @@ public class ChatRoomService {
 
         return new CreateChatRoomResponse(
                 chatRoom
+                        .getId(),
+                chatRoom
                         .getChatRoomName(),
                 chatRoom
                         .getCreatedAt(),
