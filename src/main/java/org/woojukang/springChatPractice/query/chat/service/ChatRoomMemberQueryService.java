@@ -26,12 +26,20 @@ public class ChatRoomMemberQueryService {
         return chatRoomMemberQueryRepository.findByRoomId(roomId);
     }
 
-    public ChatRoomMember findByMemberId(Long memberId){
+    public ChatRoomMember findByUserId(Long roomId,
+                                       Long memberId){
 
         return chatRoomMemberQueryRepository
-                .findByMemberId(memberId)
+                .findByUserIdWithRoomId(roomId,memberId)
                 .orElseThrow(()-> new BaseException(WebSocketExceptionEnum
                         .SUBSCRIBER_NOT_MATCHED));
+    }
+
+    public void validateDuplicateMemberWithRoom(Long roomId, Long userId){
+
+        if(chatRoomMemberQueryRepository.checkSubscriberWithRoomId(roomId,userId)){
+            throw new BaseException(WebSocketExceptionEnum.USER_ROOM_DUPLICATED);
+        }
     }
 
     // 단일 메소드 (facade사용 금지)
