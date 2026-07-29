@@ -48,6 +48,14 @@ public class ChatFacade {
     @Transactional
     public AddChatUserResponse addChatUser(AddChatRoomMemberRequest addChatRoomMemberRequest){
 
+        // 중복 여부 확인하기
+        chatRoomMemberQueryService
+                .validateDuplicateMemberWithRoom(
+                        addChatRoomMemberRequest
+                                .roomId(),
+                        addChatRoomMemberRequest
+                                .userId());
+
         // 유저 불러오기
         User user = userQueryService
                 .findById(addChatRoomMemberRequest
@@ -70,8 +78,11 @@ public class ChatFacade {
 
         // ChatRoomMember 객체 불러오기
         ChatRoomMember chatRoomMember = chatRoomMemberQueryService
-                .findByMemberId(deleteChatRoomMemberRequest
-                        .userId());
+                .findByUserId(
+                        deleteChatRoomMemberRequest
+                                .roomId(),
+                        deleteChatRoomMemberRequest
+                                .userId());
         // User 객체 불러오기
         User user = userQueryService
                 .findById(deleteChatRoomMemberRequest
