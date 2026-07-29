@@ -38,7 +38,8 @@ public class ChatRoomMemberQueryRepository {
                 .fetch();
     }
 
-    public Optional<ChatRoomMember> findByMemberId(Long memberId){
+    public Optional<ChatRoomMember> findByUserIdWithRoomId(Long roomId,
+                                                           Long memberId){
 
         return Optional.ofNullable(
                 jpaQueryFactory
@@ -47,6 +48,10 @@ public class ChatRoomMemberQueryRepository {
                                 .user
                                 .id
                                 .eq(memberId))
+                        .where(chatRoomMember
+                                .chatRoom
+                                .id
+                                .eq(roomId))
                         .fetchOne()
         );
     }
