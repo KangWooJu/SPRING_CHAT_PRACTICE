@@ -31,15 +31,19 @@ import org.woojukang.springChatPractice.domain.chat.service.ChatMessageService;
 import org.woojukang.springChatPractice.domain.chat.service.ChatRoomMemberService;
 import org.woojukang.springChatPractice.domain.chat.service.ChatRoomService;
 import org.woojukang.springChatPractice.domain.user.entity.User;
+import org.woojukang.springChatPractice.global.config.exception.WebSocketExceptionEnum;
+import org.woojukang.springChatPractice.global.config.exception.domain.BaseException;
 import org.woojukang.springChatPractice.query.chat.service.ChatMessageQueryService;
 import org.woojukang.springChatPractice.query.chat.service.ChatRoomMemberQueryService;
 import org.woojukang.springChatPractice.query.chat.service.ChatRoomQueryService;
 import org.woojukang.springChatPractice.query.user.service.UserQueryService;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -111,12 +115,11 @@ class ChatFacadeTest {
     }
 
     @Test
-    @DisplayName("사용자와 채팅방을 조회한 후, 채팅방에 사용자를 추가")
+    @DisplayName("중복 참여 여부를 확인한 후 사용자를 채팅방에 추가")
     void addChatUserSuccess() {
 
         // given
         Long userId = 10L;
-
         Long roomId = 1L;
 
         AddChatRoomMemberRequest request =
@@ -157,16 +160,25 @@ class ChatFacadeTest {
                 );
 
         // when
-        AddChatUserResponse result = chatFacade.addChatUser(request);
+        AddChatUserResponse result =
+                chatFacade.addChatUser(request);
 
         // then
-        assertThat(result).isSameAs(expectedResponse);
+        assertThat(result)
+                .isSameAs(expectedResponse);
 
         InOrder inOrder = inOrder(
+                chatRoomMemberQueryService,
                 userQueryService,
                 chatRoomQueryService,
                 chatRoomMemberService
         );
+
+        inOrder.verify(chatRoomMemberQueryService)
+                .validateDuplicateMemberWithRoom(
+                        roomId,
+                        userId
+                );
 
         inOrder.verify(userQueryService)
                 .findById(userId);
@@ -175,10 +187,10 @@ class ChatFacadeTest {
                 .findChatRoomByRoomId(roomId);
 
         inOrder.verify(chatRoomMemberService)
-                .addChatUser(requestCaptor
-                        .capture());
+                .addChatUser(requestCaptor.capture());
 
-        AddChatUserRequest capturedRequest = requestCaptor.getValue();
+        AddChatUserRequest capturedRequest =
+                requestCaptor.getValue();
 
         assertThat(capturedRequest
                 .user())
@@ -189,7 +201,55 @@ class ChatFacadeTest {
                 .isSameAs(chatRoom);
 
         verifyNoInteractions(
-                chatRoomMemberQueryService,
+                chatMessageQueryService,
+                chatRoomService,
+                chatMessageService
+        );
+    }
+
+    @Test
+    @DisplayName("이미 참여한 사용자를 채팅방에 추가하면 예외 발생")
+    void addChatUserDuplicateFail() {
+
+        // given
+        Long userId = 10L;
+        Long roomId = 1L;
+
+        AddChatRoomMemberRequest request =
+                mock(AddChatRoomMemberRequest.class);
+
+        when(request
+                .userId())
+                .thenReturn(userId);
+
+        when(request
+                .roomId())
+                .thenReturn(roomId);
+
+        doThrow(new BaseException(
+                WebSocketExceptionEnum.USER_ROOM_DUPLICATED
+        ))
+                .when(chatRoomMemberQueryService)
+                .validateDuplicateMemberWithRoom(
+                        roomId,
+                        userId
+                );
+
+        // when & then
+        assertThatThrownBy(() ->
+                chatFacade.addChatUser(request))
+                .isInstanceOf(BaseException.class);
+
+        verify(chatRoomMemberQueryService)
+                .validateDuplicateMemberWithRoom(
+                        roomId,
+                        userId
+                );
+
+        verifyNoInteractions(
+                userQueryService,
+                chatRoomQueryService,
+                chatRoomMemberService,
                 chatMessageQueryService,
                 chatRoomService,
                 chatMessageService
@@ -228,7 +288,7 @@ class ChatFacadeTest {
                 .thenReturn(roomId);
 
         when(chatRoomMemberQueryService
-                .findByMemberId(userId))
+                .findByUserId(roomId, userId))
                 .thenReturn(chatRoomMember);
 
         when(userQueryService
@@ -264,7 +324,7 @@ class ChatFacadeTest {
         );
 
         inOrder.verify(chatRoomMemberQueryService)
-                .findByMemberId(userId);
+                .findByUserId(roomId, userId);
 
         inOrder.verify(userQueryService)
                 .findById(userId);
@@ -275,7 +335,8 @@ class ChatFacadeTest {
         inOrder.verify(chatRoomMemberService)
                 .deleteChatUser(requestCaptor.capture());
 
-        DeleteChatUserRequest capturedRequest = requestCaptor.getValue();
+        DeleteChatUserRequest capturedRequest =
+                requestCaptor.getValue();
 
         assertThat(capturedRequest
                 .chatRoomMember())
@@ -302,9 +363,7 @@ class ChatFacadeTest {
 
         // given
         Long roomId = 1L;
-
         String chatRoomName = "테스트 채팅방";
-
         Long deletedMessageCount = 3L;
 
         DeleteChatRoomRequest request =
@@ -340,6 +399,15 @@ class ChatFacadeTest {
         // then
         assertThat(result)
                 .isNotNull();
+
+        assertThat(result.chatRoomId())
+                .isEqualTo(roomId);
+
+        assertThat(result.chatRoomName())
+                .isEqualTo(chatRoomName);
+
+        assertThat(result.message())
+                .isEqualTo("채팅방이 삭제되었습니다.");
 
         InOrder inOrder = inOrder(
                 chatRoomQueryService,
@@ -476,16 +544,14 @@ class ChatFacadeTest {
 
         // given
         Long roomId = 1L;
-
         Long userId = 10L;
-
         String username = "testUser";
-
         String nickname = "테스트유저";
+        String systemMessage =
+                nickname + "님이 입장했습니다.";
 
-        String systemMessage = nickname + "님이 입장했습니다.";
-
-        MessageType messageType = MessageType.ENTER;
+        MessageType messageType =
+                MessageType.ENTER;
 
         User participant =
                 mock(User.class);
@@ -543,6 +609,24 @@ class ChatFacadeTest {
         assertThat(response)
                 .isNotNull();
 
+        assertThat(response.type())
+                .isEqualTo(messageType);
+
+        assertThat(response.roomId())
+                .isEqualTo(roomId);
+
+        assertThat(response.senderId())
+                .isEqualTo(userId);
+
+        assertThat(response.senderNickname())
+                .isEqualTo(nickname);
+
+        assertThat(response.message())
+                .isEqualTo(systemMessage);
+
+        assertThat(response.sendTime())
+                .isNotNull();
+
         verifyNoInteractions(
                 chatRoomQueryService,
                 chatRoomMemberQueryService,
@@ -558,16 +642,14 @@ class ChatFacadeTest {
 
         // given
         Long roomId = 1L;
-
         Long userId = 10L;
-
         String username = "testUser";
-
         String nickname = "테스트유저";
+        String systemMessage =
+                nickname + "님이 퇴장했습니다.";
 
-        String systemMessage = nickname + "님이 퇴장했습니다.";
-
-        MessageType messageType = MessageType.LEAVE;
+        MessageType messageType =
+                MessageType.LEAVE;
 
         User participant =
                 mock(User.class);
@@ -619,8 +701,28 @@ class ChatFacadeTest {
                         responseCaptor.capture()
                 );
 
-        assertThat(responseCaptor
-                .getValue())
+        SendChatMessageResponse response =
+                responseCaptor.getValue();
+
+        assertThat(response)
+                .isNotNull();
+
+        assertThat(response.type())
+                .isEqualTo(messageType);
+
+        assertThat(response.roomId())
+                .isEqualTo(roomId);
+
+        assertThat(response.senderId())
+                .isEqualTo(userId);
+
+        assertThat(response.senderNickname())
+                .isEqualTo(nickname);
+
+        assertThat(response.message())
+                .isEqualTo(systemMessage);
+
+        assertThat(response.sendTime())
                 .isNotNull();
 
         verifyNoInteractions(
@@ -638,9 +740,7 @@ class ChatFacadeTest {
 
         // given
         Long roomId = 1L;
-
         String username = "testUser";
-
         String nickname = "테스트유저";
 
         User participant =
@@ -663,7 +763,9 @@ class ChatFacadeTest {
                         MessageType.ENTER,
                         nickname
                 ))
-                .thenReturn("테스트유저님이 입장했습니다.");
+                .thenReturn(
+                        "테스트유저님이 입장했습니다."
+                );
 
         // when
         chatFacade.publishSystemMessage(

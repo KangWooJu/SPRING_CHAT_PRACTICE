@@ -19,6 +19,7 @@ import org.woojukang.springChatPractice.query.chat.repository.ChatRoomMemberQuer
 import org.woojukang.springChatPractice.slice.query.chat.repository.helper.ChatDomainRepositoryTestHelper;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -43,6 +44,7 @@ class ChatRoomMemberQueryRepositoryTest {
 
     @BeforeEach
     void setUp() {
+
         helper = new ChatDomainRepositoryTestHelper(entityManager);
     }
 
@@ -141,13 +143,12 @@ class ChatRoomMemberQueryRepositoryTest {
         assertThat(remainingMember
                 .getChatRoom()
                 .getId())
-                .isEqualTo(room2
-                        .getId());
+                .isEqualTo(room2.getId());
     }
 
     @Test
     @DisplayName("채팅방 id를 통해 해당 채팅방에 참여한 회원 목록 조회")
-    void findByRoomId_success() {
+    void findByRoomIdSuccess() {
 
         // given
         User user1 = helper.createUser(
@@ -199,13 +200,16 @@ class ChatRoomMemberQueryRepositoryTest {
                 otherRoomUser
         );
 
+        Long targetRoomId = targetRoom.getId();
+        Long targetMember1Id = targetMember1.getId();
+        Long targetMember2Id = targetMember2.getId();
+
         entityManager.flush();
         entityManager.clear();
 
         // when
         List<ChatRoomMember> result = chatRoomMemberQueryRepository
-                .findByRoomId(targetRoom
-                        .getId());
+                .findByRoomId(targetRoomId);
 
         // then
         assertThat(result)
@@ -214,10 +218,8 @@ class ChatRoomMemberQueryRepositoryTest {
         assertThat(result)
                 .extracting(ChatRoomMember::getId)
                 .containsExactlyInAnyOrder(
-                        targetMember1
-                                .getId(),
-                        targetMember2
-                                .getId()
+                        targetMember1Id,
+                        targetMember2Id
                 );
 
         assertThat(result)
@@ -225,14 +227,13 @@ class ChatRoomMemberQueryRepositoryTest {
                         assertThat(member
                                 .getChatRoom()
                                 .getId())
-                                .isEqualTo(targetRoom
-                                        .getId())
+                                .isEqualTo(targetRoomId)
                 );
     }
 
     @Test
     @DisplayName("회원이 없는 채팅방 id로 조회하면 빈 목록을 반환")
-    void findByRoomId_empty() {
+    void findByRoomIdEmpty() {
 
         // given
         ChatRoom emptyRoom = helper.createChatRoom(
@@ -240,13 +241,135 @@ class ChatRoomMemberQueryRepositoryTest {
                 false
         );
 
+        Long emptyRoomId = emptyRoom.getId();
+
         entityManager.flush();
         entityManager.clear();
 
         // when
         List<ChatRoomMember> result = chatRoomMemberQueryRepository
-                .findByRoomId(emptyRoom
-                        .getId());
+                .findByRoomId(emptyRoomId);
+
+        // then
+        assertThat(result)
+                .isEmpty();
+    }
+
+    @Test
+    @DisplayName("채팅방 id와 사용자 id를 통해 채팅방 멤버 조회 성공")
+    void findByUserIdWithRoomIdSuccess() {
+
+        // given
+        User targetUser = helper.createUser(
+                "targetUser",
+                "password1",
+                "ROLE_USER",
+                "targetNickname",
+                false
+        );
+
+        User otherUser = helper.createUser(
+                "otherUser",
+                "password2",
+                "ROLE_USER",
+                "otherNickname",
+                false
+        );
+
+        ChatRoom targetRoom = helper.createChatRoom(
+                "targetRoom",
+                false
+        );
+
+        ChatRoom otherRoom = helper.createChatRoom(
+                "otherRoom",
+                false
+        );
+
+        ChatRoomMember targetMember = helper.createChatRoomMember(
+                targetRoom,
+                targetUser
+        );
+
+        helper.createChatRoomMember(
+                otherRoom,
+                otherUser
+        );
+
+        Long targetRoomId = targetRoom.getId();
+        Long targetUserId = targetUser.getId();
+        Long targetMemberId = targetMember.getId();
+
+        entityManager.flush();
+        entityManager.clear();
+
+        // when
+        Optional<ChatRoomMember> result =
+                chatRoomMemberQueryRepository
+                        .findByUserIdWithRoomId(
+                                targetRoomId,
+                                targetUserId
+                        );
+
+        // then
+        assertThat(result)
+                .isPresent();
+
+        assertThat(result.get().getId())
+                .isEqualTo(targetMemberId);
+
+        assertThat(result.get()
+                .getChatRoom()
+                .getId())
+                .isEqualTo(targetRoomId);
+
+        assertThat(result.get()
+                .getUser()
+                .getId())
+                .isEqualTo(targetUserId);
+    }
+
+    @Test
+    @DisplayName("사용자가 다른 채팅방의 멤버이면 조회 결과가 비어 있음")
+    void findByUserIdWithRoomIdDifferentRoom() {
+
+        // given
+        User user = helper.createUser(
+                "user1",
+                "password1",
+                "ROLE_USER",
+                "nickname1",
+                false
+        );
+
+        ChatRoom joinedRoom = helper.createChatRoom(
+                "joinedRoom",
+                false
+        );
+
+        ChatRoom targetRoom = helper.createChatRoom(
+                "targetRoom",
+                false
+        );
+
+        helper.createChatRoomMember(
+                joinedRoom,
+                user
+        );
+
+        Long targetRoomId = targetRoom.getId();
+        Long userId = user.getId();
+
+        entityManager.flush();
+        entityManager.clear();
+
+        // when
+        Optional<ChatRoomMember> result =
+                chatRoomMemberQueryRepository
+                        .findByUserIdWithRoomId(
+                                targetRoomId,
+                                userId
+                        );
 
         // then
         assertThat(result)
@@ -255,7 +378,7 @@ class ChatRoomMemberQueryRepositoryTest {
 
     @Test
     @DisplayName("사용자가 해당 채팅방의 참여자일 경우, true를 반환")
-    void checkSubscriberWithRoomId_true() {
+    void checkSubscriberWithRoomIdTrue() {
 
         // given
         User user = helper.createUser(
@@ -276,16 +399,17 @@ class ChatRoomMemberQueryRepositoryTest {
                 user
         );
 
+        Long chatRoomId = chatRoom.getId();
+        Long userId = user.getId();
+
         entityManager.flush();
         entityManager.clear();
 
         // when
         boolean result = chatRoomMemberQueryRepository
                 .checkSubscriberWithRoomId(
-                        chatRoom
-                                .getId(),
-                        user
-                                .getId()
+                        chatRoomId,
+                        userId
                 );
 
         // then
@@ -294,8 +418,8 @@ class ChatRoomMemberQueryRepositoryTest {
     }
 
     @Test
-    @DisplayName("사용자가 해당 채팅방의 참여자가 아닐경우, false를 반환")
-    void checkSubscriberWithRoomId_false() {
+    @DisplayName("사용자가 해당 채팅방의 참여자가 아닐 경우, false를 반환")
+    void checkSubscriberWithRoomIdFalse() {
 
         // given
         User member = helper.createUser(
@@ -324,14 +448,17 @@ class ChatRoomMemberQueryRepositoryTest {
                 member
         );
 
+        Long chatRoomId = chatRoom.getId();
+        Long nonMemberId = nonMember.getId();
+
         entityManager.flush();
         entityManager.clear();
 
         // when
         boolean result = chatRoomMemberQueryRepository
                 .checkSubscriberWithRoomId(
-                        chatRoom.getId(),
-                        nonMember.getId()
+                        chatRoomId,
+                        nonMemberId
                 );
 
         // then
@@ -341,7 +468,7 @@ class ChatRoomMemberQueryRepositoryTest {
 
     @Test
     @DisplayName("사용자가 다른 채팅방의 참여자인 경우, false를 반환")
-    void checkSubscriberWithRoomId_differentRoom() {
+    void checkSubscriberWithRoomIdDifferentRoom() {
 
         // given
         User user = helper.createUser(
@@ -367,16 +494,17 @@ class ChatRoomMemberQueryRepositoryTest {
                 user
         );
 
+        Long otherRoomId = otherRoom.getId();
+        Long userId = user.getId();
+
         entityManager.flush();
         entityManager.clear();
 
         // when
         boolean result = chatRoomMemberQueryRepository
                 .checkSubscriberWithRoomId(
-                        otherRoom
-                                .getId(),
-                        user
-                                .getId()
+                        otherRoomId,
+                        userId
                 );
 
         // then

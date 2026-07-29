@@ -9,6 +9,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import org.springframework.test.util.ReflectionTestUtils;
 import org.woojukang.springChatPractice.domain.chat.dto.request.CreateChatRoomRequest;
 import org.woojukang.springChatPractice.domain.chat.dto.response.CreateChatRoomResponse;
 import org.woojukang.springChatPractice.domain.chat.entity.ChatRoom;
@@ -16,8 +17,7 @@ import org.woojukang.springChatPractice.domain.chat.repository.ChatRoomRepositor
 import org.woojukang.springChatPractice.domain.chat.service.ChatRoomService;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ChatRoomServiceTest {
@@ -55,6 +55,19 @@ class ChatRoomServiceTest {
         ArgumentCaptor<ChatRoom> chatRoomCaptor =
                 ArgumentCaptor.forClass(ChatRoom.class);
 
+        when(chatRoomRepository.save(any(ChatRoom.class)))
+                .thenAnswer(invocation -> {
+
+                    ChatRoom chatRoom = invocation.getArgument(0);
+
+                    ReflectionTestUtils
+                            .setField(
+                                    chatRoom,
+                                    "id",
+                                    1L);
+                    return chatRoom;
+                });
+
         // when
         CreateChatRoomResponse result =
                 chatRoomService.createChatRoom(request);
@@ -73,6 +86,10 @@ class ChatRoomServiceTest {
         assertThat(savedChatRoom
                 .isDeleted())
                 .isFalse();
+
+        assertThat(result
+                .chatRoomId())
+                .isEqualTo(1L);
 
         assertThat(result
                 .chatRoomName())

@@ -8,15 +8,17 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-
 import org.woojukang.springChatPractice.domain.chat.entity.ChatRoomMember;
-
+import org.woojukang.springChatPractice.global.config.exception.domain.BaseException;
 import org.woojukang.springChatPractice.query.chat.repository.ChatRoomMemberQueryRepository;
 import org.woojukang.springChatPractice.query.chat.service.ChatRoomMemberQueryService;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -51,7 +53,6 @@ class ChatRoomMemberQueryServiceTest {
                 .findByRoomId(roomId))
                 .thenReturn(chatRoomMembers);
 
-
         // when
         List<ChatRoomMember> result = chatRoomMemberQueryService
                 .findByRoomId(roomId);
@@ -64,10 +65,59 @@ class ChatRoomMemberQueryServiceTest {
                 .hasSize(2)
                 .containsExactly(
                         firstMember,
-                        secondMember);
+                        secondMember
+                );
 
         verify(chatRoomMemberQueryRepository)
                 .findByRoomId(roomId);
+    }
+
+    @Test
+    @DisplayName("채팅방 id와 사용자 id를 통해 채팅방 멤버 조회 성공")
+    void findByUserIdSuccess() {
+
+        // given
+        Long roomId = 1L;
+        Long userId = 10L;
+
+        ChatRoomMember chatRoomMember = mock(ChatRoomMember.class);
+
+        when(chatRoomMemberQueryRepository
+                .findByUserIdWithRoomId(roomId, userId))
+                .thenReturn(Optional.of(chatRoomMember));
+
+        // when
+        ChatRoomMember result = chatRoomMemberQueryService
+                .findByUserId(roomId, userId);
+
+        // then
+        assertThat(result)
+                .isSameAs(chatRoomMember);
+
+        verify(chatRoomMemberQueryRepository)
+                .findByUserIdWithRoomId(roomId, userId);
+    }
+
+    @Test
+    @DisplayName("채팅방 멤버가 존재하지 않으면 예외 발생")
+    void findByUserIdFail() {
+
+        // given
+        Long roomId = 1L;
+        Long userId = 10L;
+
+        when(chatRoomMemberQueryRepository
+                .findByUserIdWithRoomId(roomId, userId))
+                .thenReturn(Optional.empty());
+
+        // when & then
+        assertThatThrownBy(() ->
+                chatRoomMemberQueryService
+                        .findByUserId(roomId, userId))
+                .isInstanceOf(BaseException.class);
+
+        verify(chatRoomMemberQueryRepository)
+                .findByUserIdWithRoomId(roomId, userId);
     }
 
     @Test
@@ -76,7 +126,6 @@ class ChatRoomMemberQueryServiceTest {
 
         // given
         Long roomId = 1L;
-
         Long userId = 10L;
 
         when(chatRoomMemberQueryRepository
@@ -92,8 +141,7 @@ class ChatRoomMemberQueryServiceTest {
                 .isTrue();
 
         verify(chatRoomMemberQueryRepository)
-                .checkSubscriberWithRoomId(roomId,
-                        userId);
+                .checkSubscriberWithRoomId(roomId, userId);
     }
 
     @Test
@@ -102,7 +150,6 @@ class ChatRoomMemberQueryServiceTest {
 
         // given
         Long roomId = 1L;
-
         Long userId = 10L;
 
         when(chatRoomMemberQueryRepository
@@ -122,6 +169,56 @@ class ChatRoomMemberQueryServiceTest {
     }
 
     @Test
+    @DisplayName("중복 참여자가 아니면 검증 통과")
+    void validateDuplicateMemberWithRoomSuccess() {
+
+        // given
+        Long roomId = 1L;
+        Long userId = 10L;
+
+        when(chatRoomMemberQueryRepository
+                .checkSubscriberWithRoomId(roomId, userId))
+                .thenReturn(false);
+
+        // when & then
+        assertThatCode(() ->
+                chatRoomMemberQueryService
+                        .validateDuplicateMemberWithRoom(
+                                roomId,
+                                userId
+                        ))
+                .doesNotThrowAnyException();
+
+        verify(chatRoomMemberQueryRepository)
+                .checkSubscriberWithRoomId(roomId, userId);
+    }
+
+    @Test
+    @DisplayName("이미 참여한 사용자는 중복 예외 발생")
+    void validateDuplicateMemberWithRoomFail() {
+
+        // given
+        Long roomId = 1L;
+        Long userId = 10L;
+
+        when(chatRoomMemberQueryRepository
+                .checkSubscriberWithRoomId(roomId, userId))
+                .thenReturn(true);
+
+        // when & then
+        assertThatThrownBy(() ->
+                chatRoomMemberQueryService
+                        .validateDuplicateMemberWithRoom(
+                                roomId,
+                                userId
+                        ))
+                .isInstanceOf(BaseException.class);
+
+        verify(chatRoomMemberQueryRepository)
+                .checkSubscriberWithRoomId(roomId, userId);
+    }
+
+    @Test
     @DisplayName("채팅방 id를 통한 채팅방 멤버 전체 삭제")
     void deleteAllChatRoomMemberByRoomId() {
 
@@ -135,6 +232,5 @@ class ChatRoomMemberQueryServiceTest {
         // then
         verify(chatRoomMemberQueryRepository)
                 .deleteAllChatMemberByRoomId(roomId);
-
     }
 }
