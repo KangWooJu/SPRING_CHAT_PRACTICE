@@ -1,6 +1,7 @@
 package org.woojukang.springChatPractice.global.docs.controller;
 
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +18,7 @@ import java.time.LocalDateTime;
 @RequestMapping("/docs/api")
 public class ApiDocsController {
 
+    @Operation(summary = "사용자 로그인",description = "로그인 API, 로그인 url은 {baseURL}/login 입니다.")
     @PostMapping("/login")
     public ResponseEntity<ApiResult<LoginResponse>> login(){
 
