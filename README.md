@@ -5,16 +5,23 @@ This is a Spring Boot project for practicing real-time chat systems using WebSoc
 The project is based on my Spring Boot default template and is intended for studying WebSocket communication, session management, concurrency, testing, and scalable chat server architecture.
 
 ---
-
 ## 1. Configuration Overview
 
 - **JPA**: Spring Data JPA
 
-  - `spring.jpa.hibernate.ddl-auto = none`
+  - `spring.jpa.hibernate.ddl-auto = validate`
   - `spring.jpa.open-in-view = false`
   - Default batch fetch size and common JPA optimization settings included
   - JPA Auditing enabled for common entity timestamp management
-  - Soft delete support with `BaseEntity` abstraction
+  - Soft delete support with `BaseEntity`
+  - `BooleanToYNConverter` applied for soft delete persistence
+
+- **Database Migration**
+
+  - Flyway-based database schema versioning
+  - Initial schema managed with `V1__init.sql`
+  - Automatic migration validation during application startup
+  - Version-controlled database schema management
 
 - **JSON**: Jackson
 
@@ -60,9 +67,10 @@ The project is based on my Spring Boot default template and is intended for stud
 
   - Swagger UI and OpenAPI configuration
   - JWT authentication guide
-  - Mock APIs for authentication filters
+  - Mock APIs for Spring Security authentication filters
   - API grouping with Swagger Tags
   - SpringDoc OpenAPI v3
+  - Dedicated API documentation for authentication endpoints
 
 - **Testing**
 
@@ -74,6 +82,7 @@ The project is based on my Spring Boot default template and is intended for stud
   - Controller slice tests
   - Service unit tests
   - QueryDSL repository tests
+  - WebSocket/STOMP integration tests
   - Reusable `IntegrationTest` base class
 
 - **YML-based Settings**
@@ -166,15 +175,14 @@ The project is based on my Spring Boot default template and is intended for stud
 | | Split Chat integration tests into REST and WebSocket test suites |
 | | Introduce reusable STOMP client test helper |
 | | Add Swagger mock APIs for STOMP messaging documentation |
-| **2026-07-31** | Refactor STOMP message validation flow |
-| | Separate subscription and message send validation logic |
-| | Improve STOMP session and channel interceptor logging |
-| | Add Swagger documentation for Chat REST APIs |
-| | Configure WebSocket handshake endpoints for integration tests |
-| | Add STOMP/WebSocket integration test support |
-| | Split Chat integration tests into REST and WebSocket test suites |
-| | Introduce reusable STOMP client test helper |
-| | Add Swagger mock APIs for STOMP messaging documentation |
+| **2026-07-31** | Introduce Flyway for database schema versioning |
+| | Add the initial Flyway migration (`V1__init.sql`) |
+| | Change Hibernate schema validation strategy to `validate` |
+| | Apply `BooleanToYNConverter` to soft delete fields |
+| | Align entity mappings with the database schema |
+| | Improve Swagger/OpenAPI package scanning configuration |
+| | Add mock authentication APIs for Swagger documentation |
+| | Enhance API documentation for Spring Security authentication flow |
 
 ---
 
