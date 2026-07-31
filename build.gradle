@@ -49,6 +49,11 @@ dependencies {
 
     /* WebSocket */
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
+    implementation 'org.springframework.boot:spring-boot-starter-flyway'
+
+    /* DB Migration (Flyway) */
+    implementation 'org.flywaydb:flyway-mysql'
+    implementation 'org.flywaydb:flyway-core'
 
     /* Spring Boot Dev */
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
