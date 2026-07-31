@@ -1,4 +1,4 @@
-package org.woojukang.springChatPractice.slice.query.repository;
+package org.woojukang.springChatPractice.slice.query.user.repository;
 
 
 import org.junit.jupiter.api.DisplayName;

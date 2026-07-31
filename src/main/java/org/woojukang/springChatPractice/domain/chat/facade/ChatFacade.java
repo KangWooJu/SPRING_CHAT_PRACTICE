@@ -4,14 +4,11 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.woojukang.springChatPractice.domain.chat.dto.MessageType;
-import org.woojukang.springChatPractice.domain.chat.dto.request.CreateChatRoomRequest;
-import org.woojukang.springChatPractice.domain.chat.dto.request.DeleteChatRoomRequest;
-import org.woojukang.springChatPractice.domain.chat.dto.request.SendChatMessageRequest;
-import org.woojukang.springChatPractice.domain.chat.dto.response.CreateChatRoomResponse;
-import org.woojukang.springChatPractice.domain.chat.dto.response.DeleteChatRoomResponse;
-import org.woojukang.springChatPractice.domain.chat.dto.response.SendChatMessageResponse;
+import org.woojukang.springChatPractice.domain.chat.dto.request.*;
+import org.woojukang.springChatPractice.domain.chat.dto.response.*;
 import org.woojukang.springChatPractice.domain.chat.entity.ChatMessage;
 import org.woojukang.springChatPractice.domain.chat.entity.ChatRoom;
+import org.woojukang.springChatPractice.domain.chat.entity.ChatRoomMember;
 import org.woojukang.springChatPractice.domain.chat.service.ChatMessageService;
 import org.woojukang.springChatPractice.domain.chat.service.ChatRoomMemberService;
 import org.woojukang.springChatPractice.domain.chat.service.ChatRoomService;
@@ -48,6 +45,62 @@ public class ChatFacade {
         return chatRoomService.createChatRoom(request);
     }
 
+    @Transactional
+    public AddChatUserResponse addChatUser(AddChatRoomMemberRequest addChatRoomMemberRequest){
+
+        // 중복 여부 확인하기
+        chatRoomMemberQueryService
+                .validateDuplicateMemberWithRoom(
+                        addChatRoomMemberRequest
+                                .roomId(),
+                        addChatRoomMemberRequest
+                                .userId());
+
+        // 유저 불러오기
+        User user = userQueryService
+                .findById(addChatRoomMemberRequest
+                        .userId());
+
+        // 채팅방 불러오기
+        ChatRoom chatRoom = chatRoomQueryService
+                .findChatRoomByRoomId(addChatRoomMemberRequest
+                        .roomId());
+
+        // 채팅방에 유저 등록하기
+        return chatRoomMemberService
+                .addChatUser(new AddChatUserRequest(
+                        chatRoom,
+                        user));
+    }
+
+    @Transactional
+    public DeleteChatUserResponse deleteChatUser(DeleteChatRoomMemberRequest deleteChatRoomMemberRequest){
+
+        // ChatRoomMember 객체 불러오기
+        ChatRoomMember chatRoomMember = chatRoomMemberQueryService
+                .findByUserId(
+                        deleteChatRoomMemberRequest
+                                .roomId(),
+                        deleteChatRoomMemberRequest
+                                .userId());
+        // User 객체 불러오기
+        User user = userQueryService
+                .findById(deleteChatRoomMemberRequest
+                        .userId());
+
+        // ChatRoom 객체 불러오기
+        ChatRoom chatRoom = chatRoomQueryService
+                .findChatRoomByRoomId(deleteChatRoomMemberRequest
+                        .roomId());
+
+        // 채팅방에서 유저 삭제하기
+        return chatRoomMemberService
+                .deleteChatUser(new DeleteChatUserRequest(
+                        chatRoomMember,
+                        chatRoom,
+                        user));
+    }
+
 
 
     // 채팅방 삭제하기
@@ -61,10 +114,9 @@ public class ChatFacade {
                         .roomId());
 
         // chatRoomMember 관계 삭제(hard)
-        chatRoomMemberService
-                .deleteChatRoomMember(chatRoomMemberQueryService
-                        .findByRoomId(request
-                                .roomId()));
+        chatRoomMemberQueryService
+                .deleteAllChatRoomMemberByRoomId(chatRoom
+                        .getId());
 
         // 채팅방 삭제(soft)
         chatRoomService.deleteChatRoom(chatRoom);

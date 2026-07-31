@@ -6,6 +6,9 @@ import org.springframework.stereotype.Repository;
 import org.woojukang.springChatPractice.domain.chat.entity.ChatRoomMember;
 import org.woojukang.springChatPractice.domain.chat.entity.QChatRoomMember;
 
+import java.util.List;
+import java.util.Optional;
+
 @Repository
 @RequiredArgsConstructor
 public class ChatRoomMemberQueryRepository {
@@ -13,14 +16,44 @@ public class ChatRoomMemberQueryRepository {
     private final JPAQueryFactory jpaQueryFactory;
     private final QChatRoomMember chatRoomMember = QChatRoomMember.chatRoomMember;
 
-    public ChatRoomMember findByRoomId(Long roomId){
+    public void deleteAllChatMemberByRoomId(Long roomId){
+
+         jpaQueryFactory
+                 .delete(chatRoomMember)
+                 .where(chatRoomMember
+                         .chatRoom
+                         .id
+                         .eq(roomId))
+                 .execute();
+    }
+
+    public List<ChatRoomMember> findByRoomId(Long roomId){
 
         return jpaQueryFactory
                 .selectFrom(chatRoomMember)
                 .where(chatRoomMember
+                        .chatRoom
                         .id
                         .eq(roomId))
-                .fetchOne();
+                .fetch();
+    }
+
+    public Optional<ChatRoomMember> findByUserIdWithRoomId(Long roomId,
+                                                           Long memberId){
+
+        return Optional.ofNullable(
+                jpaQueryFactory
+                        .selectFrom(chatRoomMember)
+                        .where(chatRoomMember
+                                .user
+                                .id
+                                .eq(memberId))
+                        .where(chatRoomMember
+                                .chatRoom
+                                .id
+                                .eq(roomId))
+                        .fetchOne()
+        );
     }
 
     public boolean checkSubscriberWithRoomId(Long roomId,Long userId){

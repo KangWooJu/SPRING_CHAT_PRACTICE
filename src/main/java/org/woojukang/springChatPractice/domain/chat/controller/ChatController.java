@@ -32,7 +32,7 @@ public class ChatController {
 
     }
 
-    /*
+    /**
     3-refactor-migrate-chat-presence-handling-to-stomp-session-events 변경점
     System 메시지를 수동 API가 아닌 EventListener를 통해 자동화
      */
