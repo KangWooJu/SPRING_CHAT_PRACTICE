@@ -3,6 +3,7 @@ package org.woojukang.springChatPractice.domain.chat.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.woojukang.springChatPractice.domain.user.entity.User;
+import org.woojukang.springChatPractice.global.converter.BooleanToYNConverter;
 import org.woojukang.springChatPractice.global.jpa.BaseEntity;
 
 import java.time.Instant;
@@ -32,6 +33,8 @@ public class ChatMessage extends BaseEntity {
     @Column
     private Instant sendAt;
 
+    @Convert(converter = BooleanToYNConverter.class)
+    @Column(nullable = false, length = 1)
     private boolean deleted;
 
     public void deleteOneMessage(){

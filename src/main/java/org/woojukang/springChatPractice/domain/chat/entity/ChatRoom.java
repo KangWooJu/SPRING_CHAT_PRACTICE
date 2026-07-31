@@ -2,6 +2,7 @@ package org.woojukang.springChatPractice.domain.chat.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.woojukang.springChatPractice.global.converter.BooleanToYNConverter;
 import org.woojukang.springChatPractice.global.jpa.BaseEntity;
 
 @Entity
@@ -19,7 +20,8 @@ public class ChatRoom extends BaseEntity {
     @Column
     private String chatRoomName;
 
-    @Column
+    @Convert(converter = BooleanToYNConverter.class)
+    @Column(nullable = false, length = 1)
     private boolean deleted;
 
     public void delete(){

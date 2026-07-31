@@ -2,6 +2,7 @@ package org.woojukang.springChatPractice.domain.user.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.woojukang.springChatPractice.global.converter.BooleanToYNConverter;
 import org.woojukang.springChatPractice.global.jpa.BaseEntity;
 
 @Entity
@@ -25,6 +26,8 @@ public class User extends BaseEntity {
     @Column(nullable = false)
     private String role;
 
+    @Convert(converter = BooleanToYNConverter.class)
+    @Column(nullable = false, length = 1)
     private boolean deleted;
 
     @Column(nullable = false)
