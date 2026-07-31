@@ -1,11 +1,13 @@
 package org.woojukang.springChatPractice.global.websocket.interceptor;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.Nullable;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
+import org.springframework.messaging.support.MessageHeaderAccessor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 import org.woojukang.springChatPractice.global.config.exception.BaseExceptionEnum;
@@ -17,85 +19,189 @@ import org.woojukang.springChatPractice.query.chat.service.ChatRoomMemberQuerySe
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class StompChannelInterceptor implements ChannelInterceptor {
 
     private final JwtAuthenticationProvider jwtAuthenticationProvider;
-
     private final ChatRoomMemberQueryService chatRoomMemberQueryService;
 
     @Override
-    public @Nullable Message<?> preSend
-            (Message<?> message,
-             MessageChannel channel) {
+    public @Nullable Message<?> preSend(Message<?> message,
+                                        MessageChannel channel) {
 
-        StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
+        StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(
+                message,
+                StompHeaderAccessor.class
+        );
 
-        if(accessor.getCommand() == null){
+        if (accessor == null || accessor.getCommand() == null) {
             return message;
         }
 
-        switch (accessor.getCommand()){
+        log.info(
+                "STOMP INBOUND - command: {}, sessionId: {}, destination: {}, user: {}",
+                accessor.getCommand(),
+                accessor.getSessionId(),
+                accessor.getDestination(),
+                accessor.getUser() != null
+                        ? accessor.getUser().getName()
+                        : null
+        );
+
+        switch (accessor.getCommand()) {
 
             case CONNECT ->
-                validateConnection(accessor);
-            case SUBSCRIBE,SEND ->
-                validateSubscription(accessor);
-            default -> {
+                    validateConnection(accessor);
 
+            case SUBSCRIBE ->
+                    validateSubscription(accessor);
+
+            case SEND ->
+                    validateSend(accessor);
+
+            default -> {
             }
         }
+
         return message;
     }
 
-    private void validateConnection(StompHeaderAccessor accessor){
+    private void validateConnection(StompHeaderAccessor accessor) {
 
-        // StompHeadAccessor를 통해 Header에서 Authorization 정보 추출
-        String authorizationHeader = accessor
-                .getFirstNativeHeader("Authorization");
+        String authorizationHeader =
+                accessor.getFirstNativeHeader("Authorization");
 
-        // jwt토큰 파싱 및 검수 후 , Authentication 객체 반환
-        Authentication authentication = jwtAuthenticationProvider
-                .authenticate(authorizationHeader);
+        Authentication authentication =
+                jwtAuthenticationProvider.authenticate(authorizationHeader);
 
         accessor.setUser(authentication);
+
+        log.info(
+                "STOMP CONNECT AUTH SUCCESS - sessionId={}, user={}, authenticationType={}",
+                accessor.getSessionId(),
+                accessor.getUser() != null
+                        ? accessor.getUser().getName()
+                        : null,
+                accessor.getUser() != null
+                        ? accessor.getUser().getClass().getName()
+                        : null
+        );
     }
 
-    private void validateSubscription(StompHeaderAccessor accessor){
+    private void validateSubscription(StompHeaderAccessor accessor) {
 
-        // 구독 destination 에서 roomId,userId 추출
-        Long roomId = extractRoomId(accessor);
+        log.info(
+                "VALIDATE SUBSCRIBE START - destination={}, user={}",
+                accessor.getDestination(),
+                accessor.getUser() != null
+                        ? accessor.getUser().getName()
+                        : null
+        );
+
+        Long roomId = extractSubscribeRoomId(accessor);
         Long userId = extractUserId(accessor);
 
-        // 해당 사용자가 채팅방 멤버인지 검증
-        if(!chatRoomMemberQueryService.checkSubscriberWithRoomId(roomId, userId)){
-            throw new BaseException(WebSocketExceptionEnum
-                    .SUBSCRIBER_NOT_MATCHED);
+        log.info(
+                "VALIDATE SUBSCRIBE PARSED - roomId={}, userId={}",
+                roomId,
+                userId
+        );
+
+        validateChatRoomMember(roomId, userId);
+    }
+
+    private void validateSend(StompHeaderAccessor accessor) {
+
+        log.info(
+                "VALIDATE SEND START - destination={}, user={}",
+                accessor.getDestination(),
+                accessor.getUser() != null
+                        ? accessor.getUser().getName()
+                        : null
+        );
+
+        Long roomId = extractSendRoomId(accessor);
+        Long userId = extractUserId(accessor);
+
+        log.info(
+                "VALIDATE SEND PARSED - roomId={}, userId={}",
+                roomId,
+                userId
+        );
+
+        validateChatRoomMember(roomId, userId);
+    }
+
+    private void validateChatRoomMember(Long roomId,
+                                        Long userId) {
+
+        boolean matched =
+                chatRoomMemberQueryService.checkSubscriberWithRoomId(
+                        roomId,
+                        userId
+                );
+
+        log.info(
+                "VALIDATE CHAT MEMBER RESULT - roomId={}, userId={}, matched={}",
+                roomId,
+                userId,
+                matched
+        );
+
+        if (!matched) {
+            throw new BaseException(
+                    WebSocketExceptionEnum.SUBSCRIBER_NOT_MATCHED
+            );
         }
     }
 
-
-    // accessor를 통해 roomId 파싱하기
-    private Long extractRoomId(StompHeaderAccessor accessor){
+    /**
+     * SUBSCRIBE
+     * /sub/api/v1/chat/{roomId}
+     */
+    private Long extractSubscribeRoomId(StompHeaderAccessor accessor) {
 
         String destination = accessor.getDestination();
 
-        if(destination == null){
-            throw new BaseException(WebSocketExceptionEnum.CHATROOM_NOT_FOUND);
+        if (destination == null) {
+            throw new BaseException(
+                    WebSocketExceptionEnum.CHATROOM_NOT_FOUND
+            );
         }
 
-        return Long
-                .parseLong(destination
-                        .substring(destination
-                                .lastIndexOf("/")+1));
+        return Long.parseLong(
+                destination.substring(destination.lastIndexOf("/") + 1)
+        );
     }
 
-    private Long extractUserId(StompHeaderAccessor accessor){
+    /**
+     * SEND
+     * /pub/api/v1/chat/{roomId}/send
+     */
+    private Long extractSendRoomId(StompHeaderAccessor accessor) {
+
+        String destination = accessor.getDestination();
+
+        if (destination == null) {
+            throw new BaseException(
+                    WebSocketExceptionEnum.CHATROOM_NOT_FOUND
+            );
+        }
+
+        String[] paths = destination.split("/");
+
+        return Long.parseLong(paths[paths.length - 2]);
+    }
+
+    private Long extractUserId(StompHeaderAccessor accessor) {
 
         Authentication authentication =
                 (Authentication) accessor.getUser();
 
         if (authentication == null) {
-            throw new BaseException(BaseExceptionEnum.USER_UNAUTHORIZED);
+            throw new BaseException(
+                    BaseExceptionEnum.USER_UNAUTHORIZED
+            );
         }
 
         AuthPrincipal principal =

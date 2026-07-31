@@ -1,6 +1,7 @@
 package org.woojukang.springChatPractice.domain.chat.websocket.listener;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Component;
@@ -18,6 +19,7 @@ import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class ChatSessionEventListener {
 
     private final ChatSubscriptionRegistry subscriptionRegistry;
@@ -30,6 +32,14 @@ public class ChatSessionEventListener {
         StompHeaderAccessor accessor =
                 StompHeaderAccessor.wrap(event.getMessage());
 
+        log.info(
+                "SUBSCRIBE EVENT - sessionId: {}, destination: {}, subscriptionId: {}",
+                accessor.getSessionId(),
+                accessor.getDestination(),
+                accessor.getSubscriptionId()
+        );
+
+
         resolveSubscription(accessor)
                 .filter(subscription ->
                         subscriptionRegistry.subscribe(
@@ -39,13 +49,18 @@ public class ChatSessionEventListener {
                                 subscription.username()
                         )
                 )
-                .ifPresent(subscription ->
+                .ifPresent(subscription -> {
+                    log.info(
+                            "ENTER PUBLISH roomId={}, username={}",
+                            subscription.roomId(),
+                            subscription.username()
+                    );
                         publishPresenceMessage(
                                 subscription.roomId(),
                                 subscription.username(),
                                 MessageType.ENTER
-                        )
-                );
+                        );
+                });
     }
 
     @EventListener
@@ -67,13 +82,20 @@ public class ChatSessionEventListener {
                                 subscriptionId
                         )
                 )
-                .ifPresent(subscription ->
-                        publishPresenceMessage(
-                                subscription.roomId(),
-                                subscription.username(),
-                                MessageType.LEAVE
-                        )
-                );
+                .ifPresent(subscription -> {
+
+                    log.info(
+                            "LEAVE PUBLISH roomId={}, username={}",
+                            subscription.roomId(),
+                            subscription.username()
+                    );
+
+                    publishPresenceMessage(
+                            subscription.roomId(),
+                            subscription.username(),
+                            MessageType.LEAVE
+                    );
+                });
     }
 
     @EventListener
@@ -126,6 +148,13 @@ public class ChatSessionEventListener {
             String username,
             MessageType messageType
     ) {
+
+        log.info(
+                "SYSTEM MESSAGE roomId={}, username={}, type={}",
+                roomId,
+                username,
+                messageType
+        );
 
         chatFacade.publishSystemMessage(
                 roomId,
