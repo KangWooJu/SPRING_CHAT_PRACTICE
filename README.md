@@ -157,6 +157,24 @@ The project is based on my Spring Boot default template and is intended for stud
 | | Add controller tests for `ChatRoomMemberController` |
 | | Adjust existing tests after separating service responsibilities |
 | | Remove unused libraries and beans |
+| **2026-07-30** | Refactor STOMP message validation flow |
+| | Separate subscription and message send validation logic |
+| | Improve STOMP session and channel interceptor logging |
+| | Add Swagger documentation for Chat REST APIs |
+| | Configure WebSocket handshake endpoints for integration tests |
+| | Add STOMP/WebSocket integration test support |
+| | Split Chat integration tests into REST and WebSocket test suites |
+| | Introduce reusable STOMP client test helper |
+| | Add Swagger mock APIs for STOMP messaging documentation |
+| **2026-07-31** | Refactor STOMP message validation flow |
+| | Separate subscription and message send validation logic |
+| | Improve STOMP session and channel interceptor logging |
+| | Add Swagger documentation for Chat REST APIs |
+| | Configure WebSocket handshake endpoints for integration tests |
+| | Add STOMP/WebSocket integration test support |
+| | Split Chat integration tests into REST and WebSocket test suites |
+| | Introduce reusable STOMP client test helper |
+| | Add Swagger mock APIs for STOMP messaging documentation |
 
 ---
 
