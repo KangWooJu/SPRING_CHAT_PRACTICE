@@ -1,5 +1,8 @@
 package org.woojukang.springChatPractice.domain.chat.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +16,7 @@ import org.woojukang.springChatPractice.domain.chat.dto.response.DeleteChatRoomR
 import org.woojukang.springChatPractice.domain.chat.facade.ChatFacade;
 import org.woojukang.springChatPractice.global.config.exception.dto.ApiResult;
 
+@Tag(name="chatRoom",description = "채팅방 생성 및 삭제 API")
 @RestController
 @RequestMapping("/api/v1/chat/room")
 @RequiredArgsConstructor
@@ -21,6 +25,9 @@ public class ChatRoomController {
     private final ChatFacade chatFacade;
 
     // 채팅방 생성하기
+    @Operation(summary = "채팅방 생성",
+            description = "AccessToken을 검증한 뒤, 채팅방을 생성합니다.")
+    @SecurityRequirement(name = "JWT")
     @PostMapping("/create")
     public ResponseEntity<ApiResult<CreateChatRoomResponse>> createChatRoom
     (@AuthenticationPrincipal UserDetails userDetails,
@@ -37,6 +44,8 @@ public class ChatRoomController {
 
 
     // 채팅방 삭제하기
+    @Operation(summary = "채팅방 삭제",description = "AccessToken을 검증한 뒤, 채팅방을 삭제합니다.")
+    @SecurityRequirement(name = "JWT")
     @DeleteMapping("/delete")
     public ResponseEntity<ApiResult<DeleteChatRoomResponse>> deleteChatRoom
     (@AuthenticationPrincipal UserDetails userDetails,
