@@ -20,6 +20,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.woojukang.springChatPractice.global.security.auth.AuthPrincipal;
+import org.woojukang.springChatPractice.global.security.auth.UserDetailsImpl;
 import org.woojukang.springChatPractice.global.security.dto.UserAuthCache;
 import org.woojukang.springChatPractice.global.security.dto.request.LoginRequest;
 import org.woojukang.springChatPractice.global.security.filter.JwtLoginFilter;
@@ -148,23 +149,23 @@ class JwtLoginFilterTest {
         Authentication authentication =
                 mock(Authentication.class);
 
-        AuthPrincipal authPrincipal =
-                mock(AuthPrincipal.class);
+        UserDetailsImpl userDetails =
+                mock(UserDetailsImpl.class);
 
         Collection<GrantedAuthority> authorities =
                 List.of(new SimpleGrantedAuthority(role));
 
         when(authentication.getPrincipal())
-                .thenReturn(authPrincipal);
+                .thenReturn(userDetails);
 
         doReturn(authorities)
                 .when(authentication)
                 .getAuthorities();
 
-        when(authPrincipal.getUsername())
+        when(userDetails.getUsername())
                 .thenReturn(username);
 
-        when(authPrincipal.getUserId())
+        when(userDetails.getUserId())
                 .thenReturn(userId);
 
         when(jwtUtil
